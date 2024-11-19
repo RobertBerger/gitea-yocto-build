@@ -20,7 +20,7 @@ jobs:
        MANIFEST_REPO: rber/manifests -b master-action
        YP_CONFIG: multi-v7-ml-debug-training
        YP_VERSION: langdale
-       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
+       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
        NO_SSTATE_MIRRORS: yes
        POPULATE_SSTATE_MIRROR: no
        # used for local source mirror:
