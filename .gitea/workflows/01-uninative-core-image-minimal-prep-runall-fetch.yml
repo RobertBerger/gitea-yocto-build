@@ -552,9 +552,11 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           script: |
             if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
-              rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+               rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
-            mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori 
+            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
+               mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+            fi
             mkdir /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
             tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
             if [ $? -ne 0 ]; then
