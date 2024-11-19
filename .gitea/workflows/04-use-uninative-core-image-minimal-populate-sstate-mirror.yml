@@ -15,12 +15,12 @@ jobs:
        WORK_DIR: ${{github.workspace}}/workdir
        GITEA_GIT_MIRROR: 192.168.42.182:8939
        GITEA_SERVER: 192.168.42.182:8940
-       WORKFLOW_DIR: yocto-build-docker-action
+       WORKFLOW_DIR: gitea-yocto-build
        WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}
        MANIFEST_REPO: rber/manifests -b master-action
        YP_CONFIG: multi-v7-ml-debug-training
        YP_VERSION: langdale
-       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/yocto-build-docker-action/workdir/artifacts
+       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
        NO_SSTATE_MIRRORS: yes
        POPULATE_SSTATE_MIRROR: yes
        # used for local source mirror:
@@ -523,9 +523,24 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           script: |
+            if [ ! -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
+               mkdir -p /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
+            fi
             cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            if [ $? -ne 0 ]; then
+               exit 1
+            fi
             pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
-            ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            # symlink does not seem to work????
+            # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            if [ -f DL_DIR.tar.gz ]; then
+               rm -f DL_DIR.tar.gz
+            fi
+            cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 2
+            fi
             ls -lah
             popd
       - name: Prepare source_mirror on server
@@ -538,11 +553,16 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           script: |
             if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
-              rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+               rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
-            mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori 
+            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
+               mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+            fi
             mkdir /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
             tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            if [ $? -ne 0 ]; then
+               exit 1
+            fi
             pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
             echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz" > build-version.txt
             ls -lah
