@@ -522,10 +522,6 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           script: |
-            # let's clean up the webserver
-            if [ -d /appdata/lighttpd/var/www ]; then
-               rm -rf /appdata/lighttpd/var/www
-            fi
             if [ ! -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
                mkdir -p /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
             fi
@@ -533,7 +529,11 @@ jobs:
             pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
             # symlink does not seem to work????
             # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
-            cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            if [ -f DL_DIR.tar.gz ]; then
+               rm -f DL_DIR.tar.gz
+            fi
+            cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
             ls -lah
             popd
       - name: Prepare source_mirror on server
