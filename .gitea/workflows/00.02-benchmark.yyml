@@ -1,0 +1,32 @@
+name: benchmark
+#on: [push]
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+jobs:
+  benchmark:
+    runs-on: yocto-build-latest
+    steps:
+      - name: Get build system info
+        id: build_system
+        run: |
+          echo "Host: ${HOSTNAME}"
+          echo "CPUs/Threads: $(grep -c ^processor /proc/cpuinfo)"
+          echo "CPUs: $(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}')"
+          echo "$(free -mh)"
+  call-use-uninative-core-image-minimal-source-mirror:
+    uses: ./.gitea/workflows/04-use-uninative-core-image-minimal-source-mirror.yml
+    secrets: inherit
+  call-use-uninative-core-image-minimal-local-source-mirror:
+    needs: call-use-uninative-core-image-minimal-source-mirror
+    uses: ./.gitea/workflows/05-use-uninative-core-image-minimal-local-source-mirror.yml
+    secrets: inherit
+  call-use-uninative-core-image-minimal-source-mirror-sstate-mirror:
+    needs: call-use-uninative-core-image-minimal-local-source-mirror
+    uses: ./.gitea/workflows/06-use-uninative-core-image-minimal-source-mirror-sstate-mirror.yml
+    secrets: inherit
+  call-use-uninative-core-image-minimal-local-source-mirror-sstate-mirror:
+    needs: call-use-uninative-core-image-minimal-source-mirror-sstate-mirror
+    uses: ./.gitea/workflows/07-use-uninative-core-image-minimal-local-source-mirror-sstate-mirror.yml
+    secrets: inherit
