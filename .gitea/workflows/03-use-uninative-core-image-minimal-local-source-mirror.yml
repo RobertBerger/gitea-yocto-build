@@ -16,8 +16,8 @@ jobs:
        GITEA_GIT_MIRROR: 192.168.42.182:8939
        GITEA_SERVER: 192.168.42.182:8940
        WORKFLOW_DIR: yocto-build-docker-action
-       WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}       
-       MANIFEST_REPO: rber/manifests -b master-action 
+       WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}
+       MANIFEST_REPO: rber/manifests -b master-action
        YP_CONFIG: multi-v7-ml-debug-training
        YP_VERSION: langdale
        ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/yocto-build-docker-action/workdir/artifacts
@@ -45,7 +45,7 @@ jobs:
        POPULATE_UNINATIVE_TARBALL: no
        UNINATIVE_TARBALL_VERSION: 3.7
        #BITBAKE_ZERO: uninative-tarball
-       BITBAKE_ZERO: empty 
+       BITBAKE_ZERO: empty
        #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
        BITBAKE_ZERO_ALLOW_ERROR: no
        # <-- only one yes, the other no
@@ -144,7 +144,7 @@ jobs:
       - name: Checkout manifest repo
         run: |
           mkdir -p ${{env.WORK_DIR}}/sources
-          pushd ${{env.WORK_DIR}}/sources 
+          pushd ${{env.WORK_DIR}}/sources
           git clone http://${{ steps.gitea_server.outputs.gitea_server }}/${{ steps.manifest_repo.outputs.manifest_repo }}
           ls
           popd
@@ -163,10 +163,10 @@ jobs:
           ./resy-${{ steps.yp_config.outputs.yp_config }}.sh
           #tree -L 1 sources
           popd
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
-          WORKSPACE: "jenkins"  
+          WORKSPACE: "jenkins"
       - name: Fix broken links
         run: |
           pushd ${{env.WORK_DIR}}
@@ -180,7 +180,7 @@ jobs:
           find . -xtype l -ls
           echo "<-- broken links"
           popd
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -191,7 +191,7 @@ jobs:
           sed -i "s,/mirror/,/${{ steps.web_server.outputs.web_server }}/," site.conf
           sed -i "s,/mirror.res.training,/${{ steps.web_server.outputs.web_server }}/," site.conf
           cat site.conf
-          popd          
+          popd
       - name: Fix site.conf file - hash server
         if: ${{ env.USE_HASH_SERVER == 'yes' }}
         run: |
@@ -206,7 +206,7 @@ jobs:
           sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
           sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
           cat site.conf
-          popd          
+          popd
       - name: Fix site.conf file - prep. build uninative-tarball
         if: ${{ env.BUILD_UNINATIVE_TARBALL == 'yes' }}
         run: |
@@ -400,7 +400,7 @@ jobs:
                 time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }}
              fi
           fi
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -422,7 +422,7 @@ jobs:
                 time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_one.outputs.bitbake_one }}
              fi
           fi
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -432,13 +432,13 @@ jobs:
       - name: bitbake ${{ env.BITBAKE_TWO }}
         run: |
           if [ "$BITBAKE_TWO" == "empty" ]; then
-             echo "BITBAKE_TWO is $BITBAKE_TWO"         
+             echo "BITBAKE_TWO is $BITBAKE_TWO"
           else
              echo "BITBAKE_TWO is $BITBAKE_TWO"
              cd ${{env.WORK_DIR}}
              time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }}
           fi
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -577,8 +577,8 @@ jobs:
                   sha256sum=($(sha256sum x86_64-nativesdk-libc-3.7.tar.xz)) && echo ${sha256sum} > sha256sum.txt
                   cat sha256sum.txt
                   ls -lah
-                popd                                  
-              popd 
+                popd
+              popd
             popd
       - name: Populate sstate_mirror on server
         if: ${{ env.POPULATE_SSTATE_MIRROR == 'yes' }}
