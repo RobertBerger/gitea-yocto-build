@@ -10,14 +10,14 @@ jobs:
     # us to build incrementally
     env:
        WORK_DIR: ${{github.workspace}}/workdir
-       GITEA_GIT_MIRROR: 10.0.0.182:8939
-       GITEA_SERVER: 10.0.0.182:8940
-       WORKFLOW_DIR: yocto-build-docker-action
-       WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}       
-       MANIFEST_REPO: rber/manifests -b master-action 
+       GITEA_GIT_MIRROR: 192.168.42.182:8939
+       GITEA_SERVER: 192.168.42.182:8940
+       WORKFLOW_DIR: gitea-yocto-build
+       WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}
+       MANIFEST_REPO: rber/manifests -b master-action-langdale
        YP_CONFIG: multi-v7-ml-debug-training
        YP_VERSION: langdale
-       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/yocto-build-docker-action/workdir/artifacts
+       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
        NO_SSTATE_MIRRORS: yes
        # used for local source mirror:
        USE_VAR_WWW: no
@@ -29,7 +29,7 @@ jobs:
        # <-- only one yes, the other no
        USE_BB_NO_NETWORK: no
        USE_BB_ALLOWED_NETWORKS: no
-       THE_ALLOWED_NETWORKS: 10.0.0.182
+       THE_ALLOWED_NETWORKS: 192.168.42.182
        # --> only one yes, the other no
        NO_PREMIRRORS: no
        USE_PREMIRRORS: yes
@@ -38,18 +38,20 @@ jobs:
        BUILD_UNINATIVE_TARBALL: yes
        USE_UNINATIVE_TARBALL: no
        DONT_USE_UNINATIVE_TARBALL: yes
+       POPULATE_UNINATIVE_TARBALL: no
+       UNINATIVE_TARBALL_VERSION: 3.7
        #BITBAKE_ZERO: uninative-tarball 
        BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
        BITBAKE_ZERO_ALLOW_ERROR: yes
        # <-- only one yes, the other no
-       THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/3.7/
-       THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+       THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+       THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
-       PR_SERVER: 10.0.0.182:18585
+       PR_SERVER: 192.168.42.182:18585
        USE_HASH_SERVER: yes
-       HASH_SERVER: 10.0.0.182:8687
+       HASH_SERVER: 192.168.42.182:8687
        # lighttpd:
-       WEB_SERVER: 10.0.0.182:8941
+       WEB_SERVER: 192.168.42.182:8941
        # nginx:
        #WEB_SERVER: 10.0.0.182:8053
        #BITBAKE_ONE: core-image-minimal
@@ -137,7 +139,7 @@ jobs:
       - name: Checkout manifest repo
         run: |
           mkdir -p ${{env.WORK_DIR}}/sources
-          pushd ${{env.WORK_DIR}}/sources 
+          pushd ${{env.WORK_DIR}}/sources
           git clone http://${{ steps.gitea_server.outputs.gitea_server }}/${{ steps.manifest_repo.outputs.manifest_repo }}
           ls
           popd
@@ -156,10 +158,10 @@ jobs:
           ./resy-${{ steps.yp_config.outputs.yp_config }}.sh
           #tree -L 1 sources
           popd
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
-          WORKSPACE: "jenkins"  
+          WORKSPACE: "jenkins"
       - name: Fix broken links
         run: |
           pushd ${{env.WORK_DIR}}
@@ -173,7 +175,7 @@ jobs:
           find . -xtype l -ls
           echo "<-- broken links"
           popd
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -184,7 +186,7 @@ jobs:
           sed -i "s,/mirror/,/${{ steps.web_server.outputs.web_server }}/," site.conf
           sed -i "s,/mirror.res.training,/${{ steps.web_server.outputs.web_server }}/," site.conf
           cat site.conf
-          popd          
+          popd
       - name: Fix site.conf file - hash server
         if: ${{ env.USE_HASH_SERVER == 'yes' }}
         run: |
@@ -199,7 +201,7 @@ jobs:
           sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
           sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
           cat site.conf
-          popd          
+          popd
       - name: Fix site.conf file - prep. build uninative-tarball
         if: ${{ env.BUILD_UNINATIVE_TARBALL == 'yes' }}
         run: |
@@ -209,17 +211,19 @@ jobs:
           echo "UNINATIVE_TARBALL=\"\"" >> site.conf
           # echo "UNINATIVE_CHECKSUM[x86_64]=\"deadbeef\"" >> site.conf
           # SRC_URI[sha256sum] = "8a6e588cc3435b9d9c87845b931ed17df7956eed29fd171aec05fbc557da6e7a"
-          echo "UNINATIVE_CHECKSUM[x86_64]=\"8a6e588cc3435b9d9c87845b931ed17df7956eed29fd171aec05fbc557da6e7a\"" >> site.conf
+          echo "UNINATIVE_CHECKSUM[x86_64]=\"954182f691bb2dbae157ee991654ad2fd4cb51c7f3d3ab429e9f84654c8dc990\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - use uninative-tarball
         if: ${{ env.USE_UNINATIVE_TARBALL == 'yes' }}
         run: |
           pushd ${{env.WORK_DIR}}/sources/meta-resy/template-common
-          # sha256sum /appdata/lighttpd/var/www/releases/uninative/3.7/x86_64-nativesdk-libc-3.7.tar.xz
-          # da39969e6e5ec22c588703a6e65f8b83ddc595276deaeacb59fb51d7ae18b710  /appdata/lighttpd/var/www/releases/uninative/3.7/x86_64-nativesdk-libc-3.7.tar.xz
-          # echo "UNINATIVE_URL=\"http://10.0.0.182:8941/source_mirror_langdale/uninative/da39969e6e5ec22c588703a6e65f8b83ddc595276deaeacb59fb51d7ae18b710/\"" >> site.conf
-          echo "UNINATIVE_CHECKSUM[x86_64]=\"da39969e6e5ec22c588703a6e65f8b83ddc595276deaeacb59fb51d7ae18b710\"" >> site.conf
+          echo "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          time wget -t 2 -T 30 --passive-ftp "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          cat sha256sum.txt
+          UNINATIVE_SHA256SUM=$(cat sha256sum.txt)
+          echo "uninative_sha256sum: ${UNINATIVE_SHA256SUM}"
+          echo "UNINATIVE_CHECKSUM[x86_64]=\"${UNINATIVE_SHA256SUM}\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - don't use uninative-tarball
@@ -324,10 +328,10 @@ jobs:
         run: |
           mkdir -p ${{env.WORK_DIR}}/source_mirror
           pushd ${{env.WORK_DIR}}
-          time wget -t 2 -T 30 --passive-ftp 'http://${{ steps.web_server.outputs.web_server }}/source_mirror_langdale_compressed/DL_DIR.tar.gz'
+          time wget -t 2 -T 30 --passive-ftp 'http://${{ steps.web_server.outputs.web_server }}/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/DL_DIR.tar.gz'
           tar xvf DL_DIR.tar.gz -C ${{env.WORK_DIR}}/source_mirror
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
-          cp DL_DIR.tar.gz ${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror_langdale_compressed.tar.gz
+          cp DL_DIR.tar.gz ${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed.tar.gz
           rm -f DL_DIR.tar.gz
           #echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
           #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
@@ -392,7 +396,7 @@ jobs:
                 time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }}
              fi
           fi
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -414,7 +418,7 @@ jobs:
                 time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_one.outputs.bitbake_one }}
              fi
           fi
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -424,13 +428,13 @@ jobs:
       - name: bitbake ${{ env.BITBAKE_TWO }}
         run: |
           if [ "$BITBAKE_TWO" == "empty" ]; then
-             echo "BITBAKE_TWO is $BITBAKE_TWO"         
+             echo "BITBAKE_TWO is $BITBAKE_TWO"
           else
              echo "BITBAKE_TWO is $BITBAKE_TWO"
              cd ${{env.WORK_DIR}}
              time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }}
           fi
-        env: 
+        env:
           # export WORKDIR to resy-cooker.sh script:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
@@ -507,6 +511,7 @@ jobs:
           source: "${{env.WORK_DIR}}/artifacts/*"
           target: /appdata/artifacts
       - name: Prepare source_mirror_local on server
+        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -514,12 +519,28 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           script: |
+            if [ ! -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
+               mkdir -p /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
+            fi
             cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            if [ $? -ne 0 ]; then
+               exit 1
+            fi
             pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
-            ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            # symlink does not seem to work????
+            # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            if [ -f DL_DIR.tar.gz ]; then
+               rm -f DL_DIR.tar.gz
+            fi
+            cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 2
+            fi
             ls -lah
             popd
       - name: Prepare source_mirror on server
+        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -527,10 +548,72 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           script: |
-            rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
-            mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori 
+            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
+               rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+            fi
+            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
+               mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+            fi
             mkdir /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-            tar -xzvf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            if [ $? -ne 0 ]; then
+               exit 1
+            fi
             pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz" > build-version.txt
+            ls -lah
+            popd
+      - name: Populate uninative-tarball on server
+        if: ${{ env.POPULATE_UNINATIVE_TARBALL == 'yes' }}
+        uses: https://github.com/appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          script: |
+            if [ -d /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori ]; then
+               rm -rf /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori
+            fi
+            if [ -d /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}} ]; then
+               mv /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}} /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori
+            fi
+            pushd ${{env.ARTIFACTS_ON_SERVER}}
+              if [ -d deploy-temp ]; then
+                 rm -rf deploy-temp
+              fi
+              mkdir deploy-temp
+              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
+              pushd deploy-temp
+                mkdir -p /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}
+                cp sdk/* /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+                pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+                  ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
+                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz" > build-version.txt
+                  sha256sum=($(sha256sum x86_64-nativesdk-libc-3.7.tar.xz)) && echo ${sha256sum} > sha256sum.txt
+                  cat sha256sum.txt
+                  ls -lah
+                popd
+              popd
+            popd
+      - name: Populate sstate_mirror on server
+        if: ${{ env.POPULATE_SSTATE_MIRROR == 'yes' }}
+        uses: https://github.com/appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          script: |
+            if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
+              rm -rf /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+            fi
+            if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
+              mv /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori 
+            fi
+            mkdir -p /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
+            tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
+            pushd /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
+            echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
             ls -lah
             popd
