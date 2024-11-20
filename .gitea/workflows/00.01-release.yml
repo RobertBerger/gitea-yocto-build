@@ -2,11 +2,12 @@ name: release
 #on: [push]
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "langdale" ]
   workflow_dispatch:
 jobs:
   release:
-    runs-on: yocto-build-latest
+    # runs-on: yocto-build-latest
+    runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     steps:
       - name: Get build system info
         id: build_system
