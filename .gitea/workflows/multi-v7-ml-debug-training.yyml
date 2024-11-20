@@ -2,8 +2,8 @@ on: [push]
 
 jobs:
   hello_world_job:
-    # runs-on: yocto-build-latest
-    runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
+    runs-on: yocto-build-latest
+    # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     timeout-minutes: 1000
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
