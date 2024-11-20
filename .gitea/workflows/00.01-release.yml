@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 jobs:
   release:
-    runs-on: yocto-build-latest
+    # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
-    # runs-on: yocto-build-langdale
+    runs-on: yocto-build-langdale
     steps:
       - name: Get build system info
         id: build_system
