@@ -56,7 +56,7 @@ jobs:
     needs: call-uninative-from-local-source-mirror
     uses: ./.gitea/workflows/03-use-uninative-core-image-minimal-local-source-mirror.yml
     secrets: inherit
-#  call-use-uninative-core-image-minimal-populate-sstate-mirror:
+  call-use-uninative-core-image-minimal-populate-sstate-mirror:
     # get/use the uninative tarball from an internal web server
     # get all sources from a network accessible source-mirror
     #   - I would think that local source-mirror would be faster
@@ -69,6 +69,6 @@ jobs:
     # populate (network accessible) sstate-mirror   
     # now we should have a 99% Sstate match 
     #
-#    needs: call-use-uninative-core-image-minimal-local-source-mirror
-#    uses: ./.gitea/workflows/04-use-uninative-core-image-minimal-populate-sstate-mirror.yml
-#    secrets: inherit
+    needs: call-use-uninative-core-image-minimal-local-source-mirror
+    uses: ./.gitea/workflows/04-use-uninative-core-image-minimal-populate-sstate-mirror.yml
+    secrets: inherit
