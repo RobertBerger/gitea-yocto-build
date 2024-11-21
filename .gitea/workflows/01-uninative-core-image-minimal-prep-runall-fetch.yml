@@ -500,7 +500,13 @@ jobs:
         run: |
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           # downloads -> source_mirror
-          cp -R ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then
+             cp -R ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          fi
+          # take care also about _master
+          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then
+             cp -R ${{env.WORK_DIR}}/downloads_master ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          fi
           # cleanup source_mirror
           pushd ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
           ${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/cleanup/cleanup.sh
