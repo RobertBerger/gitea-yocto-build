@@ -22,5 +22,6 @@ find . -name "*.done" -exec rm -f {} \;
 
 #pushd ./source_mirror_langdale_prep
 # this can be done more generic
-ln -sf gitshallow_192.168.42.182.8939.robert.berger.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz
+#ln -sf gitshallow_192.168.42.182.8939.robert.berger.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz
+ln -sf gitshallow_192.168.42.182.8939.robert.berger.linux-stable.git_adc2186-1_linux-6.12.y.tar.gz gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_adc2186-1_linux-6.12.y.tar.gz
 #popd
