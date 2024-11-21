@@ -482,8 +482,14 @@ jobs:
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy .; fi
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory .; fi
+          # check also _master
+          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_master .; fi
           if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} .; fi
+          # check also _master
+          if [ -d ${{env.WORK_DIR}}/sstate_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_master .; fi
           if [ -d ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} .; fi
+          # check also _master
+          if [ -d ${{env.WORK_DIR}}/persistent_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_master .; fi
           if [ -d ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} .; fi
           pwd
           ls -lah ${{env.WORK_DIR}}/artifacts
