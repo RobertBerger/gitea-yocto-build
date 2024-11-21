@@ -320,7 +320,7 @@ jobs:
           # 3 - Three slashes
           echo "INHERIT += \"own-mirrors\"" >> site.conf
           echo "SOURCE_MIRROR_URL = \"file://${{env.WORK_DIR}}/source_mirror/\"" >> site.conf
-          echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
+          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - BB_NO_NETWORK
