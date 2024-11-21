@@ -7,7 +7,9 @@ on:
 
 jobs:
   release-use-uninative-core-image-minimal-local-source-mirror-job:
-    runs-on: yocto-build-latest
+    # runs-on: yocto-build-latest
+    # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
+    runs-on: yocto-build-walnascar
     timeout-minutes: 1000
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
@@ -17,7 +19,7 @@ jobs:
        GITEA_SERVER: 192.168.42.182:8940
        WORKFLOW_DIR: gitea-yocto-build
        WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}
-       MANIFEST_REPO: rber/manifests -b master-action
+       MANIFEST_REPO: rber/manifests -b master-action-walnascar
        YP_CONFIG: multi-v7-ml-debug-training
        YP_VERSION: langdale
        ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
