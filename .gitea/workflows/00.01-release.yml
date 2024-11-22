@@ -17,6 +17,7 @@ jobs:
           echo "CPUs/Threads: $(grep -c ^processor /proc/cpuinfo)"
           echo "CPUs: $(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}')"
           echo "$(free -mh)"
+          echo "$(id)"
   call-runall-fetch:
     # get all the sources from outside
     #   - we use premirros in order to speed up checking out kernel, u-boot,...
