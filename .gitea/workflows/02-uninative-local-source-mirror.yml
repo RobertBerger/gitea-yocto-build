@@ -633,7 +633,7 @@ jobs:
                 pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                   ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
                   echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz" > build-version.txt
-                  sha256sum=($(sha256sum x86_64-nativesdk-libc-3.7.tar.xz)) && echo ${sha256sum} > sha256sum.txt
+                  sha256sum=($(sha256sum x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz)) && echo ${sha256sum} > sha256sum.txt
                   cat sha256sum.txt
                   ls -lah
                 popd
