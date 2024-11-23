@@ -20,23 +20,138 @@ jobs:
           echo "$(id)"
   # -->
   call-use-uninative-core-image-minimal-source-mirror:
+    # don't get http://source_mirror_xxx from the web server into a local source_mirror
+    #   USE_VAR_WWW: no
+    # no sstate mirros:
+    #   NO_SSTATE_MIRRORS: yes
+    # use a source mirror via http://
+    #   NO_SOURCE_MIRROR: no
+    #   USE_SOURCE_MIRROR: yes - here we point to the source mirror www server http://
+    #   USE_SOURCE_MIRROR_LOCAL: no
+    # use network during build
+    #   USE_BB_NO_NETWORK: no
+    #   USE_BB_ALLOWED_NETWORKS: no
+    #   THE_ALLOWED_NETWORKS: 192.168.42.182
+    # use premirros:
+    #   NO_PREMIRRORS: no
+    #   USE_PREMIRRORS: yes
+    # use a prebuilt uninative tarball
+    #   USE_UNINATIVE_TARBALL: yes
+    # bitbake core-image-minimal
+    #
+    # NOTE: Fetching uninative binary shim http://***:8941/releases/uninative/4.6/x86_64-nativesdk-libc-4.6.tar.xz;sha256sum=5***a03fef008e93aa0a12574d3e1cee2daa427c65db36b8***02d6d1253ed32e1 (will check PREMIRRORS first)
+    # Initialising tasks...Sstate summary: Wanted 1088 Local 0 Mirrors 0 Missed 1088 Current 0 (0% match, 0% complete)
+    #
+    # real   36m  4.269s
+    # user    0m  9.310s
+    # sys     0m  2.326s
+    #
+    # total: 48m 32s
+    #
+
     uses: ./.gitea/workflows/05-use-uninative-core-image-minimal-source-mirror.yml
     secrets: inherit
   # <--
   # -->
   call-use-uninative-core-image-minimal-local-source-mirror:
+    # copy http://source_mirror_xxx to ${{env.WORK_DIR}}/source_mirror
+    #   USE_VAR_WWW: yes
+    # no sstate mirros:
+    #   NO_SSTATE_MIRRORS: yes
+    # use a source mirror via file://
+    #   NO_SOURCE_MIRROR: no
+    #   USE_SOURCE_MIRROR: no
+    #   USE_SOURCE_MIRROR_LOCAL: yes - a tarball of all sources is downloaded and used locally file://
+    # use network during build
+    #   USE_BB_NO_NETWORK: no
+    #   USE_BB_ALLOWED_NETWORKS: no
+    #   THE_ALLOWED_NETWORKS: 192.168.42.182
+    # use premirros:
+    #   NO_PREMIRRORS: no
+    #   USE_PREMIRRORS: yes
+    # use a prebuilt uninative tarball
+    #   USE_UNINATIVE_TARBALL: yes
+    # bitbake core-image-minimal
+    #
+    # NOTE: Fetching uninative binary shim http://***:8941/releases/uninative/4.6/x86_64-nativesdk-libc-4.6.tar.xz;sha256sum=5***a03fef008e93aa0a12574d3e1cee2daa427c65db36b8***02d6d1253ed32e1 (will check PREMIRRORS first)
+    # Initialising tasks...Sstate summary: Wanted 1088 Local 0 Mirrors 0 Missed 1088 Current 0 (0% match, 0% complete)
+    #
+    # real   32m 49.520s
+    # user    0m  8.455s
+    # sys     0m  1.877s
+    #
+    # total: 40m  54s
+
     needs: call-use-uninative-core-image-minimal-source-mirror
     uses: ./.gitea/workflows/06-use-uninative-core-image-minimal-local-source-mirror.yml
     secrets: inherit
   # <--
   # -->
   call-use-uninative-core-image-minimal-source-mirror-sstate-mirror:
+    # don't get http://source_mirror_xxx from the web server into a local source_mirror
+    #   USE_VAR_WWW: no
+    # use sstate mirros:
+    #   NO_SSTATE_MIRRORS: no
+    # use a source mirror via http://
+    #   NO_SOURCE_MIRROR: no
+    #   USE_SOURCE_MIRROR: yes - http://
+    #   USE_SOURCE_MIRROR_LOCAL: no
+    # use network during build
+    #   USE_BB_NO_NETWORK: no
+    #   USE_BB_ALLOWED_NETWORKS: no
+    #   THE_ALLOWED_NETWORKS: 192.168.42.182
+    # use premirrors:
+    #   NO_PREMIRRORS: no
+    #   USE_PREMIRRORS: yes
+    # use a prebuilt uninative tarball
+    #   USE_UNINATIVE_TARBALL: yes
+    # bitbake core-image-minimal
+    #
+    # NOTE: Fetching uninative binary shim http://***:8941/releases/uninative/4.6/x86_64-nativesdk-libc-4.6.tar.xz;sha256sum=5***a03fef008e93aa0a12574d3e1cee2daa427c65db36b8***02d6d1253ed32e1 (will check PREMIRRORS first)
+    # Initialising tasks...Checking sstate mirror object availability...done.
+    # Sstate summary: Wanted 1088 Local 0 Mirrors 1084 Missed 4 Current 0 (99% match, 0% complete)
+    #
+    # real   2m 38.324s
+    # user   0m  2.158s
+    # sys    0m  0.681s
+    #
+    # total: 7m  8s
+
     needs: call-use-uninative-core-image-minimal-local-source-mirror
     uses: ./.gitea/workflows/07-use-uninative-core-image-minimal-source-mirror-sstate-mirror.yml
     secrets: inherit
   # <--
   # -->
   call-use-uninative-core-image-minimal-local-source-mirror-sstate-mirror:
+    # copy http://source_mirror_xxx to ${{env.WORK_DIR}}/source_mirror
+    #   USE_VAR_WWW: yes
+    # use sstate mirros:
+    #   NO_SSTATE_MIRRORS: no
+    # use a source mirror via file://
+    #   NO_SOURCE_MIRROR: no
+    #   USE_SOURCE_MIRROR: no
+    #   USE_SOURCE_MIRROR_LOCAL: yes - a tarball of all sources is downloaded and used locally file://
+    # use network during build
+    #   USE_BB_NO_NETWORK: no
+    #   USE_BB_ALLOWED_NETWORKS: no
+    #   THE_ALLOWED_NETWORKS: 192.168.42.182
+    # use premirrors:
+    #   NO_PREMIRRORS: no
+    #   USE_PREMIRRORS: yes
+    # use a prebuilt uninative tarball
+    #   USE_UNINATIVE_TARBALL: yes
+    # bitbake core-image-minimal
+    #
+    # NOTE: Fetching uninative binary shim http://***:8941/releases/uninative/4.6/x86_64-nativesdk-libc-4.6.tar.xz;sha256sum=5***a03fef008e93aa0a12574d3e1cee2daa427c65db36b8***02d6d1253ed32e1 (will check PREMIRRORS first)
+    # Initialising tasks...Checking sstate mirror object availability...done.
+    # Sstate summary: Wanted 1088 Local 0 Mirrors 1084 Missed 4 Current 0 (99% match, 0% complete)
+    #
+    # real   2m 32.618s
+    # user   0m  2.275s
+    # sys    0m  0.612s
+    #
+    # total: 8m 35s
+
     needs: call-use-uninative-core-image-minimal-source-mirror-sstate-mirror
     uses: ./.gitea/workflows/08-use-uninative-core-image-minimal-local-source-mirror-sstate-mirror.yml
     secrets: inherit

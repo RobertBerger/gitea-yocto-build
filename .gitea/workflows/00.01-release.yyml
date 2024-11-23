@@ -36,18 +36,14 @@ jobs:
   # -->
   call-uninative-from-local-source-mirror:
     # BB_NO_NETWORK is active
+    # Build the uninative tarball
     # get all the sources from a local source-mirror
     #   - download tarball from web server and unpack it
     # (networked accessible) PR_SERVER is active
     # (networked accessible) HASH_SERVER is active
     # 
     # bitbake uninative-tarball
-    # bitbake core-image-minimal 
-    #   - just to see that we can build it from the local source mirror
-    #   - if we would populate the sstate-mirror we would achive 
-    #     Sstate summary: Wanted 868 Local 0 Mirrors 487 Missed 381 Current 0 (56% match, 0% complete)
-    #     and not
-    #     Sstate summary: Wanted 868 Local 0 Mirrors 864 Missed 4 Current 0 (99% match, 0% complete)
+    #   - so we can populate it on the webserver in the next step
     #
     # populate uninative tarball
     #   - we create a file with the sha256sum of it
@@ -75,7 +71,7 @@ jobs:
     # bitbake core-image-minimal
     #
     # populate (network accessible) sstate-mirror   
-    # now we should have a 99% Sstate match 
+    # now we should have a 99% SSTATE match
     #
     needs: call-use-uninative-core-image-minimal-local-source-mirror
     uses: ./.gitea/workflows/04-use-uninative-core-image-minimal-populate-sstate-mirror.yml
