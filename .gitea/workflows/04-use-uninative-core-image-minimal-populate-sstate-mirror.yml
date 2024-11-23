@@ -78,6 +78,7 @@ jobs:
           echo "CPUs/Threads: $(grep -c ^processor /proc/cpuinfo)"
           echo "CPUs: $(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}')"
           echo "$(free -mh)"
+          echo "$(id)"
       - name: Get current date/time
         id: date
         run: |
@@ -241,6 +242,12 @@ jobs:
           UNINATIVE_SHA256SUM=$(cat sha256sum.txt)
           echo "uninative_sha256sum: ${UNINATIVE_SHA256SUM}"
           echo "UNINATIVE_CHECKSUM[x86_64]=\"${UNINATIVE_SHA256SUM}\"" >> site.conf
+          # -----> this might be needed here (since it's not build from local sources)
+          # let's comment out the UNINATIVE_URL first
+          sed -i 's/^UNINATIVE_URL/#&/' site.conf
+          # let's set the UNINATIVE_URL
+          echo "UNINATIVE_URL=\"${THE_UNINATIVE_URL}\"" >> site.conf
+          # <----- this might be needed here (since it's not build from local sources)
           cat site.conf
           popd
       - name: Fix site.conf file - don't use uninative-tarball

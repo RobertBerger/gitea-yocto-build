@@ -18,6 +18,7 @@ jobs:
           echo "CPUs: $(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}')"
           echo "$(free -mh)"
           echo "$(id)"
+  # -->
   call-runall-fetch:
     # get all the sources from outside
     #   - we use premirros in order to speed up checking out kernel, u-boot,...
@@ -31,6 +32,8 @@ jobs:
     # bitbake core-image-minimal --runall=fetch  
     uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
     secrets: inherit
+  # <--
+  # -->
   call-uninative-from-local-source-mirror:
     # BB_NO_NETWORK is active
     # get all the sources from a local source-mirror
@@ -53,10 +56,14 @@ jobs:
     needs: call-runall-fetch
     uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
     secrets: inherit
+  # <--
+  # -->
   call-use-uninative-core-image-minimal-local-source-mirror:
     needs: call-uninative-from-local-source-mirror
     uses: ./.gitea/workflows/03-use-uninative-core-image-minimal-local-source-mirror.yml
     secrets: inherit
+  # <--
+  # -->
   call-use-uninative-core-image-minimal-populate-sstate-mirror:
     # get/use the uninative tarball from an internal web server
     # get all sources from a network accessible source-mirror
@@ -73,3 +80,4 @@ jobs:
     needs: call-use-uninative-core-image-minimal-local-source-mirror
     uses: ./.gitea/workflows/04-use-uninative-core-image-minimal-populate-sstate-mirror.yml
     secrets: inherit
+  # <--
