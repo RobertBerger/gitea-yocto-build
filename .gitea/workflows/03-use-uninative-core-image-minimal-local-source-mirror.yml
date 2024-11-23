@@ -246,7 +246,7 @@ jobs:
           # let's comment out the UNINATIVE_URL first
           sed -i 's/^UNINATIVE_URL/#&/' site.conf
           # let's set the UNINATIVE_URL
-          echo "UNINATIVE_URL=\"${THE_UNINATIVE_URL}\"" >> site.conf
+          echo "UNINATIVE_URL=\"${{ env.THE_UNINATIVE_URL }}\"" >> site.conf
           # <----- this might not be needed here (since it's build from local sources)
           cat site.conf
           popd
