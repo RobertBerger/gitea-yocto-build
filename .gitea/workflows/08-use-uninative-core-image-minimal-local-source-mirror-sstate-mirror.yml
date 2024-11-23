@@ -55,6 +55,7 @@ jobs:
        # <-- only one yes, the other no
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
+       THE_SSTATE_MIRROR_URL: http://${{env.WEB_SERVER}}/sstate_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
        PR_SERVER: 192.168.42.182:18586
        USE_HASH_SERVER: yes
@@ -131,6 +132,14 @@ jobs:
         id: uninative_url
         run: |
           echo "::set-output name=uninative_url::${{env.THE_UNINATIVE_URL}}"
+      - name: get THE_SOURCE_MIRROR_URL
+        id: source_mirror_url
+        run: |
+          echo "::set-output name=source_mirror_url::${{env.THE_SOURCE_MIRROR_URL}}"
+      - name: get THE_SSTATE_MIRROR_URL
+        id: sstate_mirror_url
+        run: |
+          echo "::set-output name=sstate_mirror_url::${{env.THE_SSTATE_MIRROR_URL}}"
       - name: get Note
         id: note
         run: |
@@ -210,6 +219,8 @@ jobs:
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
           sed -i "s,mirror:8687,${{ steps.hash_server.outputs.hash_server }}," site.conf
+          sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
+          echo "BB_HASHSERVE_UPSTREAM=\"${{ env.HASH_SERVER }}\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - no SSTATE/MIRRORS,...
@@ -218,6 +229,14 @@ jobs:
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
           sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
           sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
+          cat site.conf
+          popd
+      - name: Fix site.conf file - use SSTATE/MIRRORS,...
+        if: ${{ env.NO_SSTATE_MIRRORS == 'no' }}
+        run: |
+          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+          sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
+          echo "SSTATE_MIRRORS=\"file://.* ${{ env.THE_SSTATE_MIRROR_URL }}\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - prep. build uninative-tarball
@@ -310,8 +329,9 @@ jobs:
           #sed -i "s,own-mirrors,," site.conf
           echo "INHERIT += \"own-mirrors\"" >> site.conf
           # SOURCE_MIRROR_URL = "http://example.com/my-source-mirror"
+          # remove the source mirror
+          sed -i 's/^SOURCE_MIRROR_URL/#&/' site.conf
           echo "SOURCE_MIRROR_URL = \"http://${{env.THE_SOURCE_MIRROR_URL}}\"" >> site.conf
-          echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - use SOURCE_MIRROR_LOCAL
@@ -326,7 +346,6 @@ jobs:
           # 3 - Three slashes
           echo "INHERIT += \"own-mirrors\"" >> site.conf
           echo "SOURCE_MIRROR_URL = \"file://${{env.WORK_DIR}}/source_mirror/\"" >> site.conf
-          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - BB_NO_NETWORK
@@ -341,7 +360,6 @@ jobs:
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
           echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
-          echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed
@@ -355,7 +373,6 @@ jobs:
           cp DL_DIR.tar.gz ${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed.tar.gz
           rm -f DL_DIR.tar.gz
           #echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
-          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           #cat site.conf
           popd
       # - name: Fix site.conf symlinks

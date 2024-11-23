@@ -19,19 +19,19 @@ jobs:
           echo "$(free -mh)"
           echo "$(id)"
   # -->
-  call-use-uninative-core-image-minimal-source-mirror:
-    uses: ./.gitea/workflows/05-use-uninative-core-image-minimal-source-mirror.yml
-    secrets: inherit
+#  call-use-uninative-core-image-minimal-source-mirror:
+#    uses: ./.gitea/workflows/05-use-uninative-core-image-minimal-source-mirror.yml
+#    secrets: inherit
   # <--
   # -->
-  call-use-uninative-core-image-minimal-local-source-mirror:
-    needs: call-use-uninative-core-image-minimal-source-mirror
-    uses: ./.gitea/workflows/06-use-uninative-core-image-minimal-local-source-mirror.yml
-    secrets: inherit
+#  call-use-uninative-core-image-minimal-local-source-mirror:
+#    needs: call-use-uninative-core-image-minimal-source-mirror
+#    uses: ./.gitea/workflows/06-use-uninative-core-image-minimal-local-source-mirror.yml
+#    secrets: inherit
   # <--
   # -->
   call-use-uninative-core-image-minimal-source-mirror-sstate-mirror:
-    needs: call-use-uninative-core-image-minimal-local-source-mirror
+#    needs: call-use-uninative-core-image-minimal-local-source-mirror
     uses: ./.gitea/workflows/07-use-uninative-core-image-minimal-source-mirror-sstate-mirror.yml
     secrets: inherit
   # <--
