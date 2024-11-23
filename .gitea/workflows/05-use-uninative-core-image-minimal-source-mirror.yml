@@ -236,7 +236,8 @@ jobs:
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
           sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
-          echo "SSTATE_MIRRORS=\"file://.* ${{ env.THE_SSTATE_MIRROR_URL }}\"" >> site.conf
+          # SSTATE_MIRRORS = "file://.* http://***:8941/sstate_mirror_master/PATH;downloadfilename=PATH"
+          echo "SSTATE_MIRRORS=\"file://.* ${{ env.THE_SSTATE_MIRROR_URL }}/PATH;downloadfilename=PATH\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - prep. build uninative-tarball
