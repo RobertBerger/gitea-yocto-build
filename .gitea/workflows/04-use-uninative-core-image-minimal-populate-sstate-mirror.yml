@@ -652,3 +652,28 @@ jobs:
             echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
             ls -lah
             popd
+            # !!!!! create sstate_mirror_compressed !!!!!
+            if [ ! -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
+               mkdir -p /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
+            fi
+            cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 1
+            fi
+            cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            if [ $? -ne 0 ]; then
+               exit 2
+            fi
+            pushd /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            # symlink does not seem to work????
+            # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz SSTATE_DIR.tar.gz
+            # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz SSTATE_DIR.tar.gz
+            if [ -f SSTATE_DIR.tar.gz ]; then
+               rm -f SSTATE_DIR.tar.gz
+            fi
+            cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz SSTATE_DIR.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 3
+            fi
+            ls -lah
+            popd
