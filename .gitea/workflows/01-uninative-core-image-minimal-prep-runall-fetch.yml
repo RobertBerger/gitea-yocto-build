@@ -66,7 +66,9 @@ jobs:
        BITBAKE_ONE: 'core-image-minimal --runall=fetch'
        #BITBAKE_ONE: empty
        BITBAKE_ONE_ALLOW_ERROR: yes
-       BITBAKE_TWO: empty
+       #BITBAKE_TWO: empty
+       BITBAKE_TWO: 'core-image-sato-sdk --runall=fetch'
+       BITBAKE_TWO_ALLOW_ERROR: yes
        NOTE: uninative-core-image-minimal-runall-fetch-prep-mirror
     #name: Yocto build - runall-fetch-prep-mirror
     steps:
@@ -448,7 +450,13 @@ jobs:
           else
              echo "BITBAKE_TWO is $BITBAKE_TWO"
              cd ${{env.WORK_DIR}}
-             time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }}
+             if [ "$BITBAKE_TWO_ALLOW_ERROR" == "yes" ]; then
+                # allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }} || true
+             else
+                # don't allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }}
+             fi
           fi
         env:
           # export WORKDIR to resy-cooker.sh script:
@@ -522,10 +530,6 @@ jobs:
           # remove source_mirror dir
           rm -rf ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
           popd
-          #pushd ${{env.WORK_DIR}}/sources
-          #ls ${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/cleanup
-          #mkdir 
-          #popd
 ####################### --> not supported yet ???
       # - name: Upload Artifact
       #   uses: actions/upload-artifact@v3

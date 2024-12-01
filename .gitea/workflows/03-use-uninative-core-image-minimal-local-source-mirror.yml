@@ -67,7 +67,9 @@ jobs:
        #BITBAKE_ONE: 'core-image-minimal --runall=fetch'
        #BITBAKE_ONE: empty
        BITBAKE_ONE_ALLOW_ERROR: no
-       BITBAKE_TWO: empty
+       #BITBAKE_TWO: empty
+       BITBAKE_TWO: core-image-sato-sdk
+       BITBAKE_TWO_ALLOW_ERROR: no
        NOTE: use-uninative-core-image-minimal-local-source-mirror
     #name: Yocto build - core-image-minimal-local-source-mirror
     steps:
@@ -455,7 +457,13 @@ jobs:
           else
              echo "BITBAKE_TWO is $BITBAKE_TWO"
              cd ${{env.WORK_DIR}}
-             time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }}
+             if [ "$BITBAKE_TWO_ALLOW_ERROR" == "yes" ]; then
+                # allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }} || true
+             else
+                # don't allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_two }}
+             fi
           fi
         env:
           # export WORKDIR to resy-cooker.sh script:
@@ -510,10 +518,14 @@ jobs:
           # downloads -> source_mirror
           if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then
              cp -R ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          else
+             echo "no ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }}"
           fi
           # take care also about _master
           if [ -d ${{env.WORK_DIR}}/downloads_master ]; then
              cp -R ${{env.WORK_DIR}}/downloads_master ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          else
+             echo "no ${{env.WORK_DIR}}/downloads_master"
           fi
           # cleanup source_mirror
           pushd ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
