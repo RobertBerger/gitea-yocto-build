@@ -19,7 +19,7 @@ jobs:
           echo "$(free -mh)"
           echo "$(id)"
   # -->
-  call-runall-fetch:
+#  call-runall-fetch:
     # get all the sources from outside
     #   - we use premirros in order to speed up checking out kernel, u-boot,...
     #     - because of this we need a hack (symlink) from original to mirror
@@ -30,11 +30,11 @@ jobs:
     #
     # bitbake uninative-tarball --runall=fetch
     # bitbake core-image-minimal --runall=fetch  
-    uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
-    secrets: inherit
+#    uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
+#    secrets: inherit
   # <--
   # -->
-  call-uninative-from-local-source-mirror:
+#  call-uninative-from-local-source-mirror:
     # BB_NO_NETWORK is active
     # Build the uninative tarball
     # get all the sources from a local source-mirror
@@ -49,13 +49,13 @@ jobs:
     #   - we create a file with the sha256sum of it
     #   - we create a symlink for it 
     #if: ${{ always() }} #This will make your workflow2 executed even if workflow1 fails, remove this, if you want to run this only on success of workflow1
-    needs: call-runall-fetch
-    uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
-    secrets: inherit
+#    needs: call-runall-fetch
+#    uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
+#    secrets: inherit
   # <--
   # -->
   call-use-uninative-core-image-minimal-local-source-mirror:
-    needs: call-uninative-from-local-source-mirror
+#    needs: call-uninative-from-local-source-mirror
     uses: ./.gitea/workflows/03-use-uninative-core-image-minimal-local-source-mirror.yml
     secrets: inherit
   # <--
