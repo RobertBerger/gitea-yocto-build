@@ -10,7 +10,10 @@ jobs:
     # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     runs-on: yocto-build-walnascar
-    timeout-minutes: 1000
+    # The timeout for a job to be finished.
+    # Please note that the Gitea instance also has a timeout (3h by default) for the job.
+    # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
+    timeout: 6h
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
     env:
