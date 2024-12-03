@@ -9,6 +9,7 @@ jobs:
     # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     runs-on: yocto-build-walnascar
+    timeout-minutes: 1000
     steps:
       - name: Get build system info
         id: build_system
