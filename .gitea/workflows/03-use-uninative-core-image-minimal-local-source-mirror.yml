@@ -358,7 +358,7 @@ jobs:
           mkdir -p ${{env.WORK_DIR}}/source_mirror
           pushd ${{env.WORK_DIR}}
           time wget -t 2 -T 30 --passive-ftp 'http://${{ steps.web_server.outputs.web_server }}/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/DL_DIR.tar.gz'
-          tar xvf DL_DIR.tar.gz -C ${{env.WORK_DIR}}/source_mirror
+          tar xf DL_DIR.tar.gz -C ${{env.WORK_DIR}}/source_mirror
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           cp DL_DIR.tar.gz ${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed.tar.gz
           rm -f DL_DIR.tar.gz
@@ -378,8 +378,8 @@ jobs:
         run: |
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           pushd ${{env.WORK_DIR}}/artifacts
-          if [ -d ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} ];then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-${{ env.META_RESY }}-${{ env.TEMPLATE_COMMON }}.tar.gz -C ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} .; fi
-          if [ -d ${{env.WORK_DIR}}/sources ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sources.tar.gz -C ${{env.WORK_DIR}}/sources .; fi
+          if [ -d ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} ];then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-${{ env.META_RESY }}-${{ env.TEMPLATE_COMMON }}.tar.gz -C ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} .; fi
+          if [ -d ${{env.WORK_DIR}}/sources ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sources.tar.gz -C ${{env.WORK_DIR}}/sources .; fi
           pwd
           ls -lah ${{env.WORK_DIR}}/artifacts
           popd
@@ -499,22 +499,22 @@ jobs:
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           pushd ${{env.WORK_DIR}}/artifacts
           set +x
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
           # ipk  licenses  sdk  spdx
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-ipk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk .; fi
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-licenses.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses .; fi
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk .; fi
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-spdx.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx .; fi
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-ipk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-licenses.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-spdx.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory .; fi
           # check also _master
-          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_master .; fi
-          if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} .; fi
+          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_master .; fi
+          if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} .; fi
           # check also _master
-          if [ -d ${{env.WORK_DIR}}/sstate_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_master .; fi
-          if [ -d ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} .; fi
+          if [ -d ${{env.WORK_DIR}}/sstate_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_master .; fi
+          if [ -d ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} .; fi
           # check also _master
-          if [ -d ${{env.WORK_DIR}}/persistent_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_master .; fi
-          if [ -d ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} .; fi
+          if [ -d ${{env.WORK_DIR}}/persistent_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_master .; fi
+          if [ -d ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} .; fi
           pwd
           ls -lah ${{env.WORK_DIR}}/artifacts
           popd
@@ -541,7 +541,7 @@ jobs:
           popd
           # make tarball from source_mirror 
           pushd ${{env.WORK_DIR}}/artifacts
-          tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }} .
+          tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }} .
           # remove source_mirror dir
           rm -rf ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
           popd
