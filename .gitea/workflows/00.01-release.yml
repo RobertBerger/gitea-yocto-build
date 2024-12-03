@@ -30,7 +30,8 @@ jobs:
     # (networked accessible) HASH_SERVER is active
     #
     # bitbake uninative-tarball --runall=fetch
-    # bitbake core-image-minimal --runall=fetch  
+    # bitbake core-image-minimal --runall=fetch
+#    needs: release
 #    uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
 #    secrets: inherit
   # <--
@@ -55,11 +56,11 @@ jobs:
 #    secrets: inherit
   # <--
   # -->
-  call-use-uninative-core-image-minimal-local-source-mirror:
-    needs: release
+#  call-use-uninative-core-image-minimal-local-source-mirror:
+#    needs: release
 #    needs: call-uninative-from-local-source-mirror
-    uses: ./.gitea/workflows/03-use-uninative-core-image-minimal-local-source-mirror.yml
-    secrets: inherit
+#    uses: ./.gitea/workflows/03-use-uninative-core-image-minimal-local-source-mirror.yml
+#    secrets: inherit
   # <--
   # -->
   call-use-uninative-core-image-minimal-populate-sstate-mirror:
@@ -75,7 +76,8 @@ jobs:
     # populate (network accessible) sstate-mirror   
     # now we should have a 99% SSTATE match
     #
-    needs: call-use-uninative-core-image-minimal-local-source-mirror
+    needs: release
+#    needs: call-use-uninative-core-image-minimal-local-source-mirror
     uses: ./.gitea/workflows/04-use-uninative-core-image-minimal-populate-sstate-mirror.yml
     secrets: inherit
   # <--
