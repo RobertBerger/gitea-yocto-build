@@ -63,7 +63,7 @@ jobs:
     secrets: inherit
   # <--
   # -->
-  call-use-uninative-core-image-minimal-populate-sstate-mirror:
+#  call-use-uninative-core-image-minimal-populate-sstate-mirror:
     # get/use the uninative tarball from an internal web server
     # get all sources from a network accessible source-mirror
     #   - I would think that local source-mirror would be faster
