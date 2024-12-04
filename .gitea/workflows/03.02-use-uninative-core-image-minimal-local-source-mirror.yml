@@ -562,110 +562,117 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           source: "${{env.WORK_DIR}}/artifacts/*"
           target: /appdata/artifacts
-      - name: Prepare source_mirror_local on server
-        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
-        uses: https://github.com/appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
           script: |
-            if [ ! -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
-               mkdir -p /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
-            fi
-            cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
-            if [ $? -ne 0 ]; then
-               exit 1
-            fi
-            pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
-            # symlink does not seem to work????
-            # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
-            # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
-            if [ -f DL_DIR.tar.gz ]; then
-               rm -f DL_DIR.tar.gz
-            fi
-            cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
-            if [ $? -ne 0 ]; then
-               exit 2
-            fi
-            ls -lah
-            popd
-      - name: Prepare source_mirror on server
-        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
-        uses: https://github.com/appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          script: |
-            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
-               rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
-            fi
-            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
-               mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
-            fi
-            mkdir /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-            tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-            if [ $? -ne 0 ]; then
-               exit 1
-            fi
-            pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-            echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz" > build-version.txt
-            ls -lah
-            popd
-      - name: Populate uninative-tarball on server
-        if: ${{ env.POPULATE_UNINATIVE_TARBALL == 'yes' }}
-        uses: https://github.com/appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          script: |
-            if [ -d /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori ]; then
-               rm -rf /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori
-            fi
-            if [ -d /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}} ]; then
-               mv /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}} /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori
-            fi
-            pushd ${{env.ARTIFACTS_ON_SERVER}}
-              if [ -d deploy-temp ]; then
-                 rm -rf deploy-temp
-              fi
-              mkdir deploy-temp
-              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
-              pushd deploy-temp
-                mkdir -p /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}
-                cp sdk/* /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
-                pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
-                  ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
-                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz" > build-version.txt
-                  sha256sum=($(sha256sum x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz)) && echo ${sha256sum} > sha256sum.txt
-                  cat sha256sum.txt
-                  ls -lah
-                popd
-              popd
-            popd
-      - name: Populate sstate_mirror on server
-        if: ${{ env.POPULATE_SSTATE_MIRROR == 'yes' }}
-        uses: https://github.com/appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          script: |
-            if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
-              rm -rf /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
-            fi
-            if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
-              mv /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori 
-            fi
-            mkdir -p /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
-            tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
-            pushd /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
-            echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
-            ls -lah
-            popd
+            echo "pwd"
+            pwd
+            echo "ls ${{env.WORK_DIR}}/artifacts/*"
+            ls ${{env.WORK_DIR}}/artifacts/*
+            echo "ls /appdata/artifacts"
+            ls /appdata/artifacts
+      # - name: Prepare source_mirror_local on server
+      #   if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
+      #   uses: https://github.com/appleboy/ssh-action@v0.1.10
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     script: |
+      #       if [ ! -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
+      #          mkdir -p /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
+      #       fi
+      #       cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+      #       if [ $? -ne 0 ]; then
+      #          exit 1
+      #       fi
+      #       pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+      #       # symlink does not seem to work????
+      #       # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+      #       # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+      #       if [ -f DL_DIR.tar.gz ]; then
+      #          rm -f DL_DIR.tar.gz
+      #       fi
+      #       cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+      #       if [ $? -ne 0 ]; then
+      #          exit 2
+      #       fi
+      #       ls -lah
+      #       popd
+      # - name: Prepare source_mirror on server
+      #   if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
+      #   uses: https://github.com/appleboy/ssh-action@v0.1.10
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     script: |
+      #       if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
+      #          rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+      #       fi
+      #       if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
+      #          mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+      #       fi
+      #       mkdir /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+      #       tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+      #       if [ $? -ne 0 ]; then
+      #          exit 1
+      #       fi
+      #       pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+      #       echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz" > build-version.txt
+      #       ls -lah
+      #       popd
+      # - name: Populate uninative-tarball on server
+      #   if: ${{ env.POPULATE_UNINATIVE_TARBALL == 'yes' }}
+      #   uses: https://github.com/appleboy/ssh-action@v0.1.10
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     script: |
+      #       if [ -d /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori ]; then
+      #          rm -rf /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori
+      #       fi
+      #       if [ -d /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}} ]; then
+      #          mv /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}} /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}.ori
+      #       fi
+      #       pushd ${{env.ARTIFACTS_ON_SERVER}}
+      #         if [ -d deploy-temp ]; then
+      #            rm -rf deploy-temp
+      #         fi
+      #         mkdir deploy-temp
+      #         tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
+      #         pushd deploy-temp
+      #           mkdir -p /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}
+      #           cp sdk/* /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+      #           pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+      #             ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
+      #             echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz" > build-version.txt
+      #             sha256sum=($(sha256sum x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz)) && echo ${sha256sum} > sha256sum.txt
+      #             cat sha256sum.txt
+      #             ls -lah
+      #           popd
+      #         popd
+      #       popd
+      # - name: Populate sstate_mirror on server
+      #   if: ${{ env.POPULATE_SSTATE_MIRROR == 'yes' }}
+      #   uses: https://github.com/appleboy/ssh-action@v0.1.10
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     script: |
+      #       if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
+      #         rm -rf /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+      #       fi
+      #       if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
+      #         mv /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori 
+      #       fi
+      #       mkdir -p /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
+      #       tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
+      #       pushd /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
+      #       echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
+      #       ls -lah
+      #       popd
