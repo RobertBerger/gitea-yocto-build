@@ -391,8 +391,9 @@ jobs:
       #     path: ${{env.WORK_DIR}}/artifacts
 ####################### <-- not supported yet ???
       - name: Copy artifacts before build
-        uses: https://github.com/appleboy/scp-action@v0.1.4
+        uses: https://github.com/appleboy/scp-action@v0.1.7
         with:
+          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
