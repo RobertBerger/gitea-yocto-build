@@ -555,6 +555,7 @@ jobs:
       - name: Copy artifacts after build
         uses: https://github.com/appleboy/scp-action@v0.1.7
         with:
+          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
