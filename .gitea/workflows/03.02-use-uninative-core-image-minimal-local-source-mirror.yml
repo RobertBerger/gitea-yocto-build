@@ -593,16 +593,16 @@ jobs:
       #       ls ${{env.WORK_DIR}}/artifacts/            
       - name: Upload file via SSH
         uses: nicklasfrahm/scp-action@main
-          with:
-            direction: upload
-            host: ${{ secrets.SCP_HOST }}
-            username: ${{ secrets.SCP_USERNAME }}
-            insecure_password: ${{ secrets.SCP_PASSWORD }}
-            port: ${{ secrets.SCP_PORT }}
-            action_timeout: 60m
-            source: |
-                  "${{env.WORK_DIR}}/artifacts/*"
-            target: /appdata/artifacts
+        with:
+          direction: upload
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          insecure_password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          action_timeout: 60m
+          source: |
+                 "${{env.WORK_DIR}}/artifacts/*"
+          target: /appdata/artifacts
       # - name: Set up SCP 🔑
       #   run: |
       #     mkdir -v -m 700 $HOME/.ssh
