@@ -553,15 +553,28 @@ jobs:
 #       #     name: test
 #       #     path: ${{env.WORK_DIR}}/artifacts
 # ####################### <-- not supported yet ???
-      - name: Copy artifacts after build
-        uses: garygrossgarten/github-action-scp@v0.8.0
+      - name: setup demo
+        run: |
+          mkdir test
+          touch test/oof.txt
+          touch test/.dot.txt
+      - name: Copy folder content recursively to remote
+        uses: ./
         with:
-          local: "${{env.WORK_DIR}}/artifacts/*"
+          local: test
           remote: /appdata/artifacts
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
+      # - name: Copy artifacts after build
+      #   uses: garygrossgarten/github-action-scp@v0.8.0
+      #   with:
+      #     local: "${{env.WORK_DIR}}/artifacts/*"
+      #     remote: /appdata/artifacts
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
 #       # - name: Copy artifacts after build
 #       #   uses: https://github.com/appleboy/scp-action@v0.1.7
 #       #   with:
