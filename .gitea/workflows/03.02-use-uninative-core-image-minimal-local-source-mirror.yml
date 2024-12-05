@@ -566,6 +566,7 @@ jobs:
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
       # - name: Copy artifacts after build
       #   uses: garygrossgarten/github-action-scp@v0.8.0
       #   with:
