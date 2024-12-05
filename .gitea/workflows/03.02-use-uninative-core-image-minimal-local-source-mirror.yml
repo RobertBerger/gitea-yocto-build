@@ -592,7 +592,7 @@ jobs:
       #     script: |
       #       ls ${{env.WORK_DIR}}/artifacts/            
       - name: Upload file via SSH
-        uses: nicklasfrahm/scp-action@main
+        uses: nicklasfrahm/scp-action@v1.0.1
         with:
           direction: upload
           host: ${{ secrets.SCP_HOST }}
