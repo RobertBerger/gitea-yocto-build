@@ -577,20 +577,41 @@ jobs:
       #     username: ${{ secrets.SCP_USERNAME }}
       #     password: ${{ secrets.SCP_PASSWORD }}
       #     port: ${{ secrets.SCP_PORT }}
-      - name: Copy artifacts after build
-        uses: https://github.com/appleboy/scp-action@v0.1.7
-        with:
-          command_timeout: 60m
-          host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*"
-          target: /appdata/artifacts
-          debug: true
-          #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
-          script: |
-            ls ${{env.WORK_DIR}}/artifacts/            
+      # - name: Copy artifacts after build
+      #   uses: https://github.com/appleboy/scp-action@v0.1.7
+      #   with:
+      #     command_timeout: 60m
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     source: "${{env.WORK_DIR}}/artifacts/*"
+      #     target: /appdata/artifacts
+      #     debug: true
+      #     #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
+      #     script: |
+      #       ls ${{env.WORK_DIR}}/artifacts/            
+      - name: Upload file via SSH
+          uses: nicklasfrahm/scp-action@main
+          with:
+            direction: upload
+            host: ${{ secrets.SCP_HOST }}
+            username: ${{ secrets.SCP_USERNAME }}
+            insecure_password: ${{ secrets.SCP_PASSWORD }}
+            port: ${{ secrets.SCP_PORT }}
+            action_timeout: 60m
+            source: |
+                  "${{env.WORK_DIR}}/artifacts/*"
+            target: /appdata/artifacts
+      # - name: Set up SCP 🔑
+      #   run: |
+      #     mkdir -v -m 700 $HOME/.ssh
+      #     ssh-keyscan -H ${{ secrets.SCP_HOST }} > $HOME/.ssh/known_hosts
+      #     echo "${{ secrets.SSH_KEY }}" > $HOME/.ssh/id_rsa
+      #     chmod 400 $HOME/.ssh/id_rsa
+      # - name: Upload to server ⬆️
+      #   run: |
+      #     scp ${{env.WORK_DIR}}/artifacts/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/appdata/artifacts
 #       - name: Prepare source_mirror_local on server
 #         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
 #         uses: https://github.com/appleboy/ssh-action@v0.1.10
