@@ -558,16 +558,16 @@ jobs:
           mkdir -p "${{env.WORK_DIR}}/artifacts"
           touch "${{env.WORK_DIR}}/artifacts/oof.txt"
           ls "${{env.WORK_DIR}}/artifacts/"
-      - name: Copy folder content recursively to remote
-        uses: garygrossgarten/github-action-scp@v0.8.0
-        with:
-          local: "${{env.WORK_DIR}}/artifacts"
-          #remote: /appdata/artifacts
-          remote: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
-          host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
+      # - name: Copy folder content recursively to remote
+      #   uses: garygrossgarten/github-action-scp@v0.8.0
+      #   with:
+      #     local: "${{env.WORK_DIR}}/artifacts"
+      #     #remote: /appdata/artifacts
+      #     remote: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
       # - name: Copy artifacts after build
       #   uses: garygrossgarten/github-action-scp@v0.8.0
       #   with:
@@ -577,18 +577,19 @@ jobs:
       #     username: ${{ secrets.SCP_USERNAME }}
       #     password: ${{ secrets.SCP_PASSWORD }}
       #     port: ${{ secrets.SCP_PORT }}
-#       # - name: Copy artifacts after build
-#       #   uses: https://github.com/appleboy/scp-action@v0.1.7
-#       #   with:
-#       #     command_timeout: 60m
-#       #     host: ${{ secrets.SCP_HOST }}
-#       #     username: ${{ secrets.SCP_USERNAME }}
-#       #     password: ${{ secrets.SCP_PASSWORD }}
-#       #     port: ${{ secrets.SCP_PORT }}
-#       #     source: "${{env.WORK_DIR}}/artifacts/*"
-#       #     target: /appdata/artifacts
-#       #     script: |
-#       #       ls ${{env.WORK_DIR}}/artifacts/            
+      - name: Copy artifacts after build
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*"
+          #target: /appdata/artifacts
+          target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
+          script: |
+            ls ${{env.WORK_DIR}}/artifacts/            
 #       - name: Prepare source_mirror_local on server
 #         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
 #         uses: https://github.com/appleboy/ssh-action@v0.1.10
