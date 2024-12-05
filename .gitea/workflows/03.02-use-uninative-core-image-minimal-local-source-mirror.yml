@@ -586,8 +586,8 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           source: "${{env.WORK_DIR}}/artifacts/*"
-          #target: /appdata/artifacts
-          target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
+          target: /appdata/artifacts
+          #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
           script: |
             ls ${{env.WORK_DIR}}/artifacts/            
 #       - name: Prepare source_mirror_local on server
