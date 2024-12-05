@@ -559,7 +559,7 @@ jobs:
           touch "${{env.WORK_DIR}}/artifacts/oof.txt"
           ls "${{env.WORK_DIR}}/artifacts/"
       - name: Copy folder content recursively to remote
-        uses: ./
+        uses: garygrossgarten/github-action-scp@v0.8.0
         with:
           local: "${{env.WORK_DIR}}/artifacts"
           remote: /appdata/artifacts
