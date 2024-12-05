@@ -555,6 +555,7 @@ jobs:
 # ####################### <-- not supported yet ???
       - name: setup demo
         run: |
+          mkdir -p ${{env.WORK_DIR}}/artifacts
           touch ${{env.WORK_DIR}}/artifacts/oof.txt
       - name: Copy folder content recursively to remote
         uses: ./
