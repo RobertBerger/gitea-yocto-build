@@ -587,6 +587,7 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           source: "${{env.WORK_DIR}}/artifacts/*"
           target: /appdata/artifacts
+          debug: true
           #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
           script: |
             ls ${{env.WORK_DIR}}/artifacts/            
