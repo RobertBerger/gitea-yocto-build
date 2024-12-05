@@ -553,15 +553,15 @@ jobs:
 #       #     name: test
 #       #     path: ${{env.WORK_DIR}}/artifacts
 # ####################### <-- not supported yet ???
-#       - name: Copy artifacts after build
-#         uses: garygrossgarten/github-action-scp@release
-#         with:
-#           local: "${{env.WORK_DIR}}/artifacts/*"
-#           remote: /appdata/artifacts
-#           host: ${{ secrets.SCP_HOST }}
-#           username: ${{ secrets.SCP_USERNAME }}
-#           password: ${{ secrets.SCP_PASSWORD }}
-#           port: ${{ secrets.SCP_PORT }}
+      - name: Copy artifacts after build
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: "${{env.WORK_DIR}}/artifacts/*"
+          remote: /appdata/artifacts
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
 #       # - name: Copy artifacts after build
 #       #   uses: https://github.com/appleboy/scp-action@v0.1.7
 #       #   with:
