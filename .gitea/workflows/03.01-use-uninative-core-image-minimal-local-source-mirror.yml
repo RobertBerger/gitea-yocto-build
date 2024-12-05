@@ -670,3 +670,7 @@ jobs:
             echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
             ls -lah
             popd
+      - name: Finished 03.01-use-uninative-core-image-minimal-local-source-mirror
+        id: finished_03_01
+        run: |
+          echo "Finished 03.01-use-uninative-core-image-minimal-local-source-mirror"
