@@ -604,8 +604,8 @@ jobs:
           action_timeout: 60m
           source: |
             ${{env.WORK_DIR}}/artifacts/oof.txt
-          #target: /appdata/artifacts
-          target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
+          target: /appdata/artifacts
+          #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
       # - name: Set up SCP 🔑
       #   run: |
       #     mkdir -v -m 700 $HOME/.ssh
