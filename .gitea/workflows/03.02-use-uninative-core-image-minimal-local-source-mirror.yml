@@ -557,6 +557,7 @@ jobs:
         run: |
           mkdir -p "${{env.WORK_DIR}}/artifacts"
           touch "${{env.WORK_DIR}}/artifacts/oof.txt"
+          echo "ls ${{env.WORK_DIR}}/artifacts/"
           ls "${{env.WORK_DIR}}/artifacts/"
       # - name: Copy folder content recursively to remote
       #   uses: garygrossgarten/github-action-scp@v0.8.0
@@ -602,8 +603,9 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           action_timeout: 60m
           source: |
-                 "${{env.WORK_DIR}}/artifacts/*"
-          target: /appdata/artifacts
+                 "${{env.WORK_DIR}}/artifacts/oof.txt"
+          #target: /appdata/artifacts
+          target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
       # - name: Set up SCP 🔑
       #   run: |
       #     mkdir -v -m 700 $HOME/.ssh
