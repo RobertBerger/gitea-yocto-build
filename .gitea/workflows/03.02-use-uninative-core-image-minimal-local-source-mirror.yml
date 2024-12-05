@@ -555,13 +555,11 @@ jobs:
 # ####################### <-- not supported yet ???
       - name: setup demo
         run: |
-          mkdir test
-          touch test/oof.txt
-          touch test/.dot.txt
+          touch ${{env.WORK_DIR}}/artifacts/oof.txt
       - name: Copy folder content recursively to remote
         uses: ./
         with:
-          local: test
+          local: "${{env.WORK_DIR}}/artifacts"
           remote: /appdata/artifacts
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
