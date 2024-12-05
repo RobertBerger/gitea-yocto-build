@@ -603,8 +603,10 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           action_timeout: 60m
           source: |
-            ${{env.WORK_DIR}}/artifacts/oof.txt
+            ${{env.WORK_DIR}}/artifacts/*
           target: /appdata/artifacts
+          script: |
+            ls ${{env.WORK_DIR}}/artifacts/            
           #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
       # - name: Set up SCP 🔑
       #   run: |
