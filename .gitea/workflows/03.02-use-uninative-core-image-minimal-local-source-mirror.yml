@@ -598,6 +598,7 @@ jobs:
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
           insecure_password: ${{ secrets.SCP_PASSWORD }}
+          insecure_ignore_fingerprint: true
           port: ${{ secrets.SCP_PORT }}
           action_timeout: 60m
           source: |
