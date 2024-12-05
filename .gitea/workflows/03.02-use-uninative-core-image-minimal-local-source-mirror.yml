@@ -562,7 +562,8 @@ jobs:
         uses: garygrossgarten/github-action-scp@v0.8.0
         with:
           local: "${{env.WORK_DIR}}/artifacts"
-          remote: /appdata/artifacts
+          #remote: /appdata/artifacts
+          remote: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
