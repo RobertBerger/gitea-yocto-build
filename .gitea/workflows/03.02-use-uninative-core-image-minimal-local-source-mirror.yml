@@ -578,33 +578,32 @@ jobs:
       #     username: ${{ secrets.SCP_USERNAME }}
       #     password: ${{ secrets.SCP_PASSWORD }}
       #     port: ${{ secrets.SCP_PORT }}
-      # - name: Copy artifacts after build
-      #   uses: https://github.com/appleboy/scp-action@v0.1.7
-      #   with:
-      #     command_timeout: 60m
-      #     host: ${{ secrets.SCP_HOST }}
-      #     username: ${{ secrets.SCP_USERNAME }}
-      #     password: ${{ secrets.SCP_PASSWORD }}
-      #     port: ${{ secrets.SCP_PORT }}
-      #     source: "${{env.WORK_DIR}}/artifacts/*"
-      #     target: /appdata/artifacts
-      #     debug: true
-      #     #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
-      #     script: |
-      #       ls ${{env.WORK_DIR}}/artifacts/            
-      - name: Upload file via SSH
-        uses: nicklasfrahm/scp-action@v1.0.1
+      - name: Copy artifacts after build
+        uses: https://github.com/appleboy/scp-action@v0.1.7
         with:
-          direction: upload
+          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
           username: ${{ secrets.SCP_USERNAME }}
-          insecure_password: ${{ secrets.SCP_PASSWORD }}
-          insecure_ignore_fingerprint: true
+          password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          action_timeout: 60m
-          source: |
-            ${{ env.WORK_DIR }}/artifacts/*.txt
+          source: "${{env.WORK_DIR}}/artifacts/*"
           target: /appdata/artifacts
+          debug: true
+          script: |
+            ls ${{env.WORK_DIR}}/artifacts/            
+      # - name: Upload file via SSH
+      #   uses: nicklasfrahm/scp-action@v1.0.1
+      #   with:
+      #     direction: upload
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     insecure_password: ${{ secrets.SCP_PASSWORD }}
+      #     insecure_ignore_fingerprint: true
+      #     port: ${{ secrets.SCP_PORT }}
+      #     action_timeout: 60m
+      #     source: |
+      #       ${{ env.WORK_DIR }}/artifacts/*.txt
+      #     target: /appdata/artifacts
           #target: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
       # - name: Set up SCP 🔑
       #   run: |
