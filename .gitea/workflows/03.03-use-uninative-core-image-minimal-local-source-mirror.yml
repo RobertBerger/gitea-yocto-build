@@ -160,9 +160,9 @@ jobs:
           git clone http://${{ steps.gitea_server.outputs.gitea_server }}/${{ steps.workflow_repo.outputs.workflow_repo }}
           ls
           popd
-      - name: Experiment with mounted volume
+      - name: Experiment with scp
         run: |
-          ls /artifacts-on-server/
+          ls ${{env.WORK_DIR}}/sources
       # - name: Checkout manifest repo
       #   run: |
       #     mkdir -p ${{env.WORK_DIR}}/sources
