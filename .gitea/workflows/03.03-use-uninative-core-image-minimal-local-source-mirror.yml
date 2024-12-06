@@ -160,72 +160,75 @@ jobs:
           git clone http://${{ steps.gitea_server.outputs.gitea_server }}/${{ steps.workflow_repo.outputs.workflow_repo }}
           ls
           popd
-      - name: Checkout manifest repo
+      - name: Experiment with mounted volume
         run: |
-          mkdir -p ${{env.WORK_DIR}}/sources
-          pushd ${{env.WORK_DIR}}/sources
-          git clone http://${{ steps.gitea_server.outputs.gitea_server }}/${{ steps.manifest_repo.outputs.manifest_repo }}
-          ls
-          popd
-      - name: Create symlinks
-        run: |
-          cd ${{env.WORK_DIR}}
-          ln -sf sources/manifests/resy-cooker.sh resy-cooker.sh
-          ln -sf sources/manifests/killall_bitbake.sh killall_bitbake.sh
-          ln -sf sources/manifests/resy-${{ steps.yp_config.outputs.yp_config }}.sh resy-${{ steps.yp_config.outputs.yp_config }}.sh
-          pwd
-          ls
-      - name: Checkout repos for ${{ env.YP_CONFIG }}
-        run: |
-          pushd ${{env.WORK_DIR}}
-          ls
-          ./resy-${{ steps.yp_config.outputs.yp_config }}.sh
-          #tree -L 1 sources
-          popd
-        env:
-          # export WORKDIR to resy-cooker.sh script:
-          WORKDIR: ${{ env.WORK_DIR }}
-          WORKSPACE: "jenkins"
-      - name: Fix broken links
-        run: |
-          pushd ${{env.WORK_DIR}}
-          echo "--> broken links"
-          find . -xtype l -ls
-          echo "<-- broken links"
-          echo "--> fix links"
-          find . -xtype l -exec bash -c 'target="$(readlink "{}")"; link="{}"; target="$(echo "$target" | sed "s,/workdir,${{ env.WORK_DIR }},g")"; ln -Tfs "$target" "$link"' \;
-          echo "<-- fix links"
-          echo "--> broken links"
-          find . -xtype l -ls
-          echo "<-- broken links"
-          popd
-        env:
-          # export WORKDIR to resy-cooker.sh script:
-          WORKDIR: ${{ env.WORK_DIR }}
-          WORKSPACE: "jenkins"
-      - name: Fix site.conf file
-        run: |
-          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
-          sed -i "s,/workdir,${{ env.WORK_DIR }}," site.conf
-          sed -i "s,/mirror/,/${{ steps.web_server.outputs.web_server }}/," site.conf
-          sed -i "s,/mirror.res.training,/${{ steps.web_server.outputs.web_server }}/," site.conf
-          cat site.conf
-          popd
-      - name: Fix site.conf file - hash server
-        if: ${{ env.USE_HASH_SERVER == 'yes' }}
-        run: |
-          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
-          sed -i "s,mirror:8687,${{ steps.hash_server.outputs.hash_server }}," site.conf
-          cat site.conf
-          popd
-      - name: Fix site.conf file - no SSTATE/MIRRORS,...
-        if: ${{ env.NO_SSTATE_MIRRORS == 'yes' }}
-        run: |
-          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
-          sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
-          sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
-          cat site.conf
-          popd
+          ls /artifacts-on-server/
+      # - name: Checkout manifest repo
+      #   run: |
+      #     mkdir -p ${{env.WORK_DIR}}/sources
+      #     pushd ${{env.WORK_DIR}}/sources
+      #     git clone http://${{ steps.gitea_server.outputs.gitea_server }}/${{ steps.manifest_repo.outputs.manifest_repo }}
+      #     ls
+      #     popd
+      # - name: Create symlinks
+      #   run: |
+      #     cd ${{env.WORK_DIR}}
+      #     ln -sf sources/manifests/resy-cooker.sh resy-cooker.sh
+      #     ln -sf sources/manifests/killall_bitbake.sh killall_bitbake.sh
+      #     ln -sf sources/manifests/resy-${{ steps.yp_config.outputs.yp_config }}.sh resy-${{ steps.yp_config.outputs.yp_config }}.sh
+      #     pwd
+      #     ls
+      # - name: Checkout repos for ${{ env.YP_CONFIG }}
+      #   run: |
+      #     pushd ${{env.WORK_DIR}}
+      #     ls
+      #     ./resy-${{ steps.yp_config.outputs.yp_config }}.sh
+      #     #tree -L 1 sources
+      #     popd
+      #   env:
+      #     # export WORKDIR to resy-cooker.sh script:
+      #     WORKDIR: ${{ env.WORK_DIR }}
+      #     WORKSPACE: "jenkins"
+      # - name: Fix broken links
+      #   run: |
+      #     pushd ${{env.WORK_DIR}}
+      #     echo "--> broken links"
+      #     find . -xtype l -ls
+      #     echo "<-- broken links"
+      #     echo "--> fix links"
+      #     find . -xtype l -exec bash -c 'target="$(readlink "{}")"; link="{}"; target="$(echo "$target" | sed "s,/workdir,${{ env.WORK_DIR }},g")"; ln -Tfs "$target" "$link"' \;
+      #     echo "<-- fix links"
+      #     echo "--> broken links"
+      #     find . -xtype l -ls
+      #     echo "<-- broken links"
+      #     popd
+      #   env:
+      #     # export WORKDIR to resy-cooker.sh script:
+      #     WORKDIR: ${{ env.WORK_DIR }}
+      #     WORKSPACE: "jenkins"
+      # - name: Fix site.conf file
+      #   run: |
+      #     pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+      #     sed -i "s,/workdir,${{ env.WORK_DIR }}," site.conf
+      #     sed -i "s,/mirror/,/${{ steps.web_server.outputs.web_server }}/," site.conf
+      #     sed -i "s,/mirror.res.training,/${{ steps.web_server.outputs.web_server }}/," site.conf
+      #     cat site.conf
+      #     popd
+      # - name: Fix site.conf file - hash server
+      #   if: ${{ env.USE_HASH_SERVER == 'yes' }}
+      #   run: |
+      #     pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+      #     sed -i "s,mirror:8687,${{ steps.hash_server.outputs.hash_server }}," site.conf
+      #     cat site.conf
+      #     popd
+      # - name: Fix site.conf file - no SSTATE/MIRRORS,...
+      #   if: ${{ env.NO_SSTATE_MIRRORS == 'yes' }}
+      #   run: |
+      #     pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+      #     sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
+      #     sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
+      #     cat site.conf
+      #     popd
 #       - name: Fix site.conf file - prep. build uninative-tarball
 #         if: ${{ env.BUILD_UNINATIVE_TARBALL == 'yes' }}
 #         run: |
@@ -553,12 +556,12 @@ jobs:
 #       #     name: test
 #       #     path: ${{env.WORK_DIR}}/artifacts
 # ####################### <-- not supported yet ???
-      - name: setup demo
-        run: |
-          mkdir -p "${{env.WORK_DIR}}/artifacts"
-          touch "${{env.WORK_DIR}}/artifacts/oof.txt"
-          echo "ls ${{env.WORK_DIR}}/artifacts/"
-          ls "${{env.WORK_DIR}}/artifacts/"
+      # - name: setup demo
+      #   run: |
+      #     mkdir -p "${{env.WORK_DIR}}/artifacts"
+      #     touch "${{env.WORK_DIR}}/artifacts/oof.txt"
+      #     echo "ls ${{env.WORK_DIR}}/artifacts/"
+      #     ls "${{env.WORK_DIR}}/artifacts/"
       # - name: Copy folder content recursively to remote
       #   uses: garygrossgarten/github-action-scp@v0.8.0
       #   with:
@@ -578,19 +581,19 @@ jobs:
       #     username: ${{ secrets.SCP_USERNAME }}
       #     password: ${{ secrets.SCP_PASSWORD }}
       #     port: ${{ secrets.SCP_PORT }}
-      - name: Copy artifacts after build
-        uses: https://github.com/appleboy/scp-action@v0.1.7
-        with:
-          command_timeout: 60m
-          host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*"
-          target: /appdata/artifacts
-          debug: true
-          script: |
-            ls ${{env.WORK_DIR}}/artifacts/            
+      # - name: Copy artifacts after build
+      #   uses: https://github.com/appleboy/scp-action@v0.1.7
+      #   with:
+      #     command_timeout: 60m
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     source: "${{env.WORK_DIR}}/artifacts/*"
+      #     target: /appdata/artifacts
+      #     debug: true
+      #     script: |
+      #       ls ${{env.WORK_DIR}}/artifacts/            
       # - name: Upload file via SSH
       #   uses: nicklasfrahm/scp-action@v1.0.1
       #   with:
