@@ -553,7 +553,11 @@ jobs:
       #     name: test
       #     path: ${{env.WORK_DIR}}/artifacts
 ####################### <-- not supported yet ???
-      - name: Copy artifacts after build
+      - name: Copy artifacts after build - what is there? (0)
+        run: |
+          echo "ls ${{env.WORK_DIR}}/artifacts/"
+          ls "${{env.WORK_DIR}}/artifacts/"
+      - name: Copy artifacts after build - buildhistory (1)
         uses: https://github.com/appleboy/scp-action@v0.1.7
         with:
           command_timeout: 60m
@@ -561,8 +565,119 @@ jobs:
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*"
+          source: "${{env.WORK_DIR}}/artifacts/*-buildhistory.tar.gz"
           target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - conf (2)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-conf.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - deploy-ipk (3)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - deploy-licenses (4)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - deploy-spdx (5)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-deploy-spdx.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - DL_DIR (6)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-DL_DIR.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - template-common (7)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-template-common*.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - PERSISTENT_DIR (8)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-PERSISTENT_DIR.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - source_mirror_${{env.YP_VERSION}}_compressed (9)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - sources (10)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-sources.tar.gz"
+          target: /appdata/artifacts
+          debug: true
+      - name: Copy artifacts after build - SSTATE_DIR (11)
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          command_timeout: 60m
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          source: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
+          target: /appdata/artifacts
+          debug: true
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
