@@ -400,6 +400,7 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           source: "${{env.WORK_DIR}}/artifacts/*"
           target: /appdata/artifacts
+          debug: true
 #######################################  
       # - name: bitbake uninative-tarball
       #   if: ${{ env.BUILD_UNINATIVE_TARBALL == 'yes' }}
