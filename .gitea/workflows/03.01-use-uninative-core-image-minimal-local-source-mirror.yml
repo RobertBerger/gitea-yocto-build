@@ -71,8 +71,8 @@ jobs:
        #BITBAKE_ONE: 'core-image-minimal --runall=fetch'
        #BITBAKE_ONE: empty
        BITBAKE_ONE_ALLOW_ERROR: no
-       #BITBAKE_TWO: empty
-       BITBAKE_TWO: core-image-sato-sdk
+       BITBAKE_TWO: empty
+       #BITBAKE_TWO: core-image-sato-sdk
        BITBAKE_TWO_ALLOW_ERROR: no
        NOTE: use-uninative-core-image-minimal-local-source-mirror
     #name: Yocto build - core-image-minimal-local-source-mirror
