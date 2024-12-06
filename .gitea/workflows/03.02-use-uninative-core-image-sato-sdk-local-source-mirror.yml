@@ -52,10 +52,6 @@ jobs:
        DONT_USE_UNINATIVE_TARBALL: no
        POPULATE_UNINATIVE_TARBALL: no
        UNINATIVE_TARBALL_VERSION: 4.6
-       #BITBAKE_ZERO: uninative-tarball
-       BITBAKE_ZERO: empty
-       #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
-       BITBAKE_ZERO_ALLOW_ERROR: no
        # <-- only one yes, the other no
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
@@ -67,12 +63,17 @@ jobs:
        WEB_SERVER: 192.168.42.182:8941
        # nginx:
        #WEB_SERVER: 10.0.0.182:8053
-       BITBAKE_ONE: core-image-minimal
+       #BITBAKE_ZERO: uninative-tarball
+       BITBAKE_ZERO: empty
+       #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
+       BITBAKE_ZERO_ALLOW_ERROR: no
+       BITBAKE_ONE: empty
+       #BITBAKE_ONE: core-image-minimal
        #BITBAKE_ONE: 'core-image-minimal --runall=fetch'
        #BITBAKE_ONE: empty
        BITBAKE_ONE_ALLOW_ERROR: no
-       BITBAKE_TWO: empty
-       #BITBAKE_TWO: core-image-sato-sdk
+       #BITBAKE_TWO: empty
+       BITBAKE_TWO: core-image-sato-sdk
        BITBAKE_TWO_ALLOW_ERROR: no
        NOTE: use-uninative-core-image-minimal-local-source-mirror
     #name: Yocto build - core-image-minimal-local-source-mirror
