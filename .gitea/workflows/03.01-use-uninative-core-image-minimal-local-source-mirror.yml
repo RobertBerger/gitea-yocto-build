@@ -390,6 +390,10 @@ jobs:
       #     name: test
       #     path: ${{env.WORK_DIR}}/artifacts
 ####################### <-- not supported yet ???
+      - name: Copy artifacts before build - what is there? (0)
+        run: |
+          echo "ls ${{env.WORK_DIR}}/artifacts/"
+          ls "${{env.WORK_DIR}}/artifacts/"
       - name: Copy artifacts before build
         uses: https://github.com/appleboy/scp-action@v0.1.7
         with:
