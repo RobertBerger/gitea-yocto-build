@@ -20,9 +20,7 @@ jobs:
     env:
        WORK_DIR: ${{github.workspace}}/workdir
        GITEA_GIT_MIRROR: 192.168.42.182:8939
-       #GITEA_GIT_MIRROR: omv-1.res.training:8939
        GITEA_SERVER: 192.168.42.182:8940
-       #GITEA_SERVER: omv-1.res.training:8940
        WORKFLOW_DIR: gitea-yocto-build
        WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}
        MANIFEST_REPO: rber/manifests -b master-action-walnascar
@@ -42,15 +40,8 @@ jobs:
        USE_SOURCE_MIRROR_LOCAL: yes
        # <-- only one yes, the other no
        USE_BB_NO_NETWORK: yes
-       # -->
-       # this should allow to access my internal server
-       # although BB_NO_NETWORK = 1
-       # and like this it should get the uninative tarball from there
        USE_BB_ALLOWED_NETWORKS: no
        THE_ALLOWED_NETWORKS: 192.168.42.182
-       #THE_ALLOWED_NETWORKS: "*res.training"
-       #THE_ALLOWED_NETWORKS: "*42.182"
-       # <--
        # --> only one yes, the other no
        NO_PREMIRRORS: yes
        USE_PREMIRRORS: no
@@ -63,19 +54,15 @@ jobs:
        POPULATE_UNINATIVE_TARBALL: no
        UNINATIVE_TARBALL_VERSION: 4.6
        # <-- only one yes, the other no
-       # wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_UNINATIVE_LOCAL_URL: file:///${{env.WORK_DIR}}/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
        PR_SERVER: 192.168.42.182:18586
-       #PR_SERVER: omv-1.res.training:18586
        USE_HASH_SERVER: yes
        HASH_SERVER: 192.168.42.182:8688
-       #HASH_SERVER: omv-1.res.training:8688
        # lighttpd:
        WEB_SERVER: 192.168.42.182:8941
-       #WEB_SERVER: omv-1.res.training:8941
        # nginx:
        #WEB_SERVER: 10.0.0.182:8053
        #BITBAKE_ZERO: uninative-tarball

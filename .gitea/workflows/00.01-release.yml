@@ -59,8 +59,8 @@ jobs:
   call-use-uninative-core-image-minimal-local-source-mirror:
     needs: release
 #    needs: call-uninative-from-local-source-mirror
-    uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
-    #uses: ./.gitea/workflows/03.02-use-uninative-core-image-sato-sdk-local-source-mirror.yml
+    #uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
+    uses: ./.gitea/workflows/03.02-use-uninative-core-image-sato-sdk-local-source-mirror.yml
     #uses: ./.gitea/workflows/03.03-use-uninative-core-image-minimal-local-source-mirror.yml
     secrets: inherit
   # <--

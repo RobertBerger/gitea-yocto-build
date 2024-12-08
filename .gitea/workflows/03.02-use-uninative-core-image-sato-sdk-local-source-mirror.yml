@@ -48,12 +48,14 @@ jobs:
        # <-- only one yes, the other no 
        # --> only one yes, the other no
        BUILD_UNINATIVE_TARBALL: no
-       USE_UNINATIVE_TARBALL: yes
+       USE_UNINATIVE_TARBALL: no
+       USE_UNINATIVE_TARBALL_LOCAL: yes
        DONT_USE_UNINATIVE_TARBALL: no
        POPULATE_UNINATIVE_TARBALL: no
        UNINATIVE_TARBALL_VERSION: 4.6
        # <-- only one yes, the other no
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+       THE_UNINATIVE_LOCAL_URL: file:///${{env.WORK_DIR}}/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
        PR_SERVER: 192.168.42.182:18586
@@ -154,6 +156,10 @@ jobs:
         id: bitbake_two
         run: |
           echo "::set-output name=bitbake_two::${{env.BITBAKE_TWO}}"
+      - name: Get the_allowed_networks
+        id: the_allowed_networks
+        run: |
+          echo "::set-output name=the_allowed_networks::${{env.THE_ALLOWED_NETWORKS}}"
       - name: Checkout workflow repo
         run: |
           mkdir -p ${{env.WORK_DIR}}/sources
@@ -257,6 +263,24 @@ jobs:
           # <----- this might not be needed here (since it's build from local sources)
           cat site.conf
           popd
+      - name: Fix site.conf file - use uninative-tarball local
+        if: ${{ env.USE_UNINATIVE_TARBALL_LOCAL == 'yes' }}
+        run: |
+          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+          echo "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          time wget -t 2 -T 30 --passive-ftp "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          cat sha256sum.txt
+          UNINATIVE_SHA256SUM=$(cat sha256sum.txt)
+          echo "uninative_sha256sum: ${UNINATIVE_SHA256SUM}"
+          echo "UNINATIVE_CHECKSUM[x86_64]=\"${UNINATIVE_SHA256SUM}\"" >> site.conf
+          # -----> this might not be needed here (since it's build from local sources)
+          # let's comment out the UNINATIVE_URL first
+          sed -i 's/^UNINATIVE_URL/#&/' site.conf
+          # let's set the UNINATIVE_LOCAL_URL
+          echo "UNINATIVE_URL=\"${{ env.THE_UNINATIVE_LOCAL_URL }}\"" >> site.conf
+          # <----- this might not be needed here (since it's build from local sources)
+          cat site.conf
+          popd
       - name: Fix site.conf file - don't use uninative-tarball
         if: ${{ env.DONT_USE_UNINATIVE_TARBALL == 'yes' }}
         run: |
@@ -349,13 +373,15 @@ jobs:
         if: ${{ env.USE_BB_ALLOWED_NETWORKS == 'yes' }}
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
-          echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
-          echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
+          #echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
+          echo "BB_ALLOWED_NETWORKS = ${{ env.THE_ALLOWED_NETWORKS }}" >> site.conf
+          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed
         if: ${{ env.USE_VAR_WWW == 'yes' }}
         run: |
+          # --> source mirror local
           mkdir -p ${{env.WORK_DIR}}/source_mirror
           pushd ${{env.WORK_DIR}}
           time wget -t 2 -T 30 --passive-ftp 'http://${{ steps.web_server.outputs.web_server }}/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/DL_DIR.tar.gz'
@@ -367,6 +393,14 @@ jobs:
           #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           #cat site.conf
           popd
+          # <-- source mirror local
+          # --> uninative local
+          mkdir -p ${{env.WORK_DIR}}/uninative
+          pushd ${{env.WORK_DIR}}/uninative
+          time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
+          tree ${{env.WORK_DIR}}/uninative
+          popd
+          # <-- uninative local
       # - name: Fix site.conf symlinks
       #   run: |
       #     pushd ${{env.WORK_DIR}}
@@ -769,7 +803,7 @@ jobs:
             echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
             ls -lah
             popd
-      - name: Finished 03.01-use-uninative-core-image-minimal-local-source-mirror
-        id: finished_03_01
+      - name: Finished 03.02-use-uninative-core-sato-sdk-local-source-mirror
+        id: finished_03_02
         run: |
-          echo "Finished 03.01-use-uninative-core-image-minimal-local-source-mirror"
+          echo "Finished Finished 03.02-use-uninative-core-sato-sdk-local-source-mirror"
