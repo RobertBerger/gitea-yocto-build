@@ -616,24 +616,24 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-conf.tar.gz"
           dist: /appdata/artifacts
-      - name: Copy artifacts after build - deploy-ipk (6)
-        uses: youxingz/sshpass-scp-action@v3
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          user: ${{ secrets.SCP_USERNAME }}
-          pass: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          src: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
-          dist: /appdata/artifacts
-      - name: Copy artifacts after build - deploy-licenses (7)
-        uses: youxingz/sshpass-scp-action@v3
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          user: ${{ secrets.SCP_USERNAME }}
-          pass: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          src: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
-          dist: /appdata/artifacts
+      # - name: Copy artifacts after build - deploy-ipk (6)
+      #   uses: youxingz/sshpass-scp-action@v3
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     user: ${{ secrets.SCP_USERNAME }}
+      #     pass: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     src: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
+      #     dist: /appdata/artifacts
+      # - name: Copy artifacts after build - deploy-licenses (7)
+      #   uses: youxingz/sshpass-scp-action@v3
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     user: ${{ secrets.SCP_USERNAME }}
+      #     pass: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     src: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
+      #     dist: /appdata/artifacts
       - name: Copy artifacts after build - deploy-spdx (8)
         uses: youxingz/sshpass-scp-action@v3
         with:
