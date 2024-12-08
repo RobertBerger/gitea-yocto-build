@@ -163,6 +163,7 @@ jobs:
       - name: Experiment with scp
         run: |
           ls ${{env.WORK_DIR}}/sources
+          echo "${{env.network}}"
       # - name: Checkout manifest repo
       #   run: |
       #     mkdir -p ${{env.WORK_DIR}}/sources
