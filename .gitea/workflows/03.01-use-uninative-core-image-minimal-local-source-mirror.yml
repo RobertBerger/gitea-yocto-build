@@ -19,10 +19,10 @@ jobs:
     # us to build incrementally
     env:
        WORK_DIR: ${{github.workspace}}/workdir
-       #GITEA_GIT_MIRROR: 192.168.42.182:8939
-       GITEA_GIT_MIRROR: omv-1.res.training:8939
-       #GITEA_SERVER: 192.168.42.182:8940
-       GITEA_SERVER: omv-1.res.training:8940
+       GITEA_GIT_MIRROR: 192.168.42.182:8939
+       #GITEA_GIT_MIRROR: omv-1.res.training:8939
+       GITEA_SERVER: 192.168.42.182:8940
+       #GITEA_SERVER: omv-1.res.training:8940
        WORKFLOW_DIR: gitea-yocto-build
        WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}
        MANIFEST_REPO: rber/manifests -b master-action-walnascar
@@ -46,9 +46,10 @@ jobs:
        # this should allow to access my internal server
        # although BB_NO_NETWORK = 1
        # and like this it should get the uninative tarball from there
-       USE_BB_ALLOWED_NETWORKS: yes
-       #THE_ALLOWED_NETWORKS: 192.168.42.182
-       THE_ALLOWED_NETWORKS: "*res.training"
+       USE_BB_ALLOWED_NETWORKS: no
+       THE_ALLOWED_NETWORKS: 192.168.42.182
+       #THE_ALLOWED_NETWORKS: "*res.training"
+       #THE_ALLOWED_NETWORKS: "*42.182"
        # <--
        # --> only one yes, the other no
        NO_PREMIRRORS: yes
@@ -56,22 +57,25 @@ jobs:
        # <-- only one yes, the other no 
        # --> only one yes, the other no
        BUILD_UNINATIVE_TARBALL: no
-       USE_UNINATIVE_TARBALL: yes
+       USE_UNINATIVE_TARBALL: no
+       USE_UNINATIVE_TARBALL_LOCAL: yes
        DONT_USE_UNINATIVE_TARBALL: no
        POPULATE_UNINATIVE_TARBALL: no
        UNINATIVE_TARBALL_VERSION: 4.6
        # <-- only one yes, the other no
+       # wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+       THE_UNINATIVE_LOCAL_URL: file:///${{env.WORK_DIR}}/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
-       #PR_SERVER: 192.168.42.182:18586
-       PR_SERVER: omv-1.res.training:18586
+       PR_SERVER: 192.168.42.182:18586
+       #PR_SERVER: omv-1.res.training:18586
        USE_HASH_SERVER: yes
-       #HASH_SERVER: 192.168.42.182:8688
-       HASH_SERVER: omv-1.res.training:8688
+       HASH_SERVER: 192.168.42.182:8688
+       #HASH_SERVER: omv-1.res.training:8688
        # lighttpd:
-       #WEB_SERVER: 192.168.42.182:8941
-       WEB_SERVER: omv-1.res.training:8941
+       WEB_SERVER: 192.168.42.182:8941
+       #WEB_SERVER: omv-1.res.training:8941
        # nginx:
        #WEB_SERVER: 10.0.0.182:8053
        #BITBAKE_ZERO: uninative-tarball
@@ -271,6 +275,24 @@ jobs:
           # <----- this might not be needed here (since it's build from local sources)
           cat site.conf
           popd
+      - name: Fix site.conf file - use uninative-tarball local
+        if: ${{ env.USE_UNINATIVE_TARBALL_LOCAL == 'yes' }}
+        run: |
+          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+          echo "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          time wget -t 2 -T 30 --passive-ftp "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          cat sha256sum.txt
+          UNINATIVE_SHA256SUM=$(cat sha256sum.txt)
+          echo "uninative_sha256sum: ${UNINATIVE_SHA256SUM}"
+          echo "UNINATIVE_CHECKSUM[x86_64]=\"${UNINATIVE_SHA256SUM}\"" >> site.conf
+          # -----> this might not be needed here (since it's build from local sources)
+          # let's comment out the UNINATIVE_URL first
+          sed -i 's/^UNINATIVE_URL/#&/' site.conf
+          # let's set the UNINATIVE_LOCAL_URL
+          echo "UNINATIVE_URL=\"${{ env.THE_UNINATIVE_LOCAL_URL }}\"" >> site.conf
+          # <----- this might not be needed here (since it's build from local sources)
+          cat site.conf
+          popd
       - name: Fix site.conf file - don't use uninative-tarball
         if: ${{ env.DONT_USE_UNINATIVE_TARBALL == 'yes' }}
         run: |
@@ -371,6 +393,7 @@ jobs:
       - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed
         if: ${{ env.USE_VAR_WWW == 'yes' }}
         run: |
+          # --> source mirror local
           mkdir -p ${{env.WORK_DIR}}/source_mirror
           pushd ${{env.WORK_DIR}}
           time wget -t 2 -T 30 --passive-ftp 'http://${{ steps.web_server.outputs.web_server }}/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/DL_DIR.tar.gz'
@@ -382,6 +405,14 @@ jobs:
           #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           #cat site.conf
           popd
+          # <-- source mirror local
+          # --> uninative local
+          mkdir -p ${{env.WORK_DIR}}/uninative
+          pushd ${{env.WORK_DIR}}/uninative
+          time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
+          tree ${{env.WORK_DIR}}/uninative
+          popd
+          # <-- uninative local
       # - name: Fix site.conf symlinks
       #   run: |
       #     pushd ${{env.WORK_DIR}}
