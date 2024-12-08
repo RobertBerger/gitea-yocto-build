@@ -29,6 +29,7 @@ jobs:
        TEMPLATE_COMMON: template-common-master
        YP_VERSION: walnascar
        ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
+       LOCAL_MOUNTED_ON_SERVER: /workspace/rber/gitea-yocto-build
        NO_SSTATE_MIRRORS: yes
        POPULATE_SSTATE_MIRROR: no
        # used for local source mirror:
@@ -165,6 +166,7 @@ jobs:
           ls ${{env.WORK_DIR}}/sources
           echo "${{env.network}}"
           mount
+          cp -r ${{env.WORK_DIR}}/sources ${{env.LOCAL_MOUNTED_ON_SERVER}}/
       # - name: Checkout manifest repo
       #   run: |
       #     mkdir -p ${{env.WORK_DIR}}/sources
