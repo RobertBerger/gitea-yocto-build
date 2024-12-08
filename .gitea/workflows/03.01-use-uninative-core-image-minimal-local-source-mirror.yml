@@ -40,8 +40,13 @@ jobs:
        USE_SOURCE_MIRROR_LOCAL: yes
        # <-- only one yes, the other no
        USE_BB_NO_NETWORK: yes
-       USE_BB_ALLOWED_NETWORKS: no
+       # -->
+       # this should allow to access my internal server
+       # although BB_NO_NETWORK = 1
+       # and like this it should get the uninative tarball from there
+       USE_BB_ALLOWED_NETWORKS: yes
        THE_ALLOWED_NETWORKS: 192.168.42.182
+       # <--
        # --> only one yes, the other no
        NO_PREMIRRORS: yes
        USE_PREMIRRORS: no
@@ -52,10 +57,6 @@ jobs:
        DONT_USE_UNINATIVE_TARBALL: no
        POPULATE_UNINATIVE_TARBALL: no
        UNINATIVE_TARBALL_VERSION: 4.6
-       #BITBAKE_ZERO: uninative-tarball
-       BITBAKE_ZERO: empty
-       #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
-       BITBAKE_ZERO_ALLOW_ERROR: no
        # <-- only one yes, the other no
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
@@ -67,6 +68,10 @@ jobs:
        WEB_SERVER: 192.168.42.182:8941
        # nginx:
        #WEB_SERVER: 10.0.0.182:8053
+       #BITBAKE_ZERO: uninative-tarball
+       BITBAKE_ZERO: empty
+       #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
+       BITBAKE_ZERO_ALLOW_ERROR: no
        BITBAKE_ONE: core-image-minimal
        #BITBAKE_ONE: 'core-image-minimal --runall=fetch'
        #BITBAKE_ONE: empty
@@ -349,7 +354,7 @@ jobs:
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
           echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
-          echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
+          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed
@@ -406,38 +411,32 @@ jobs:
       #     target: /appdata/artifacts
       #     debug: true
       - name: Copy artifacts before build - template-common (1)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-template-common*.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-template-common*.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts before build - source_mirror_${{env.YP_VERSION}}_compressed (2)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts before build - sources (3)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-sources.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-sources.tar.gz"
+          dist: /appdata/artifacts
 #######################################  
       # - name: bitbake uninative-tarball
       #   if: ${{ env.BUILD_UNINATIVE_TARBALL == 'yes' }}
@@ -596,93 +595,77 @@ jobs:
           echo "ls ${{env.WORK_DIR}}/artifacts/"
           ls "${{env.WORK_DIR}}/artifacts/"
       - name: Copy artifacts after build - buildhistory (4)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-buildhistory.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-buildhistory.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts after build - conf (5)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-conf.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-conf.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts after build - deploy-ipk (6)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts after build - deploy-licenses (7)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts after build - deploy-spdx (8)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-deploy-spdx.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-spdx.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts after build - DL_DIR (9)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-DL_DIR.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-DL_DIR.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts after build - PERSISTENT_DIR (10)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-PERSISTENT_DIR.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-PERSISTENT_DIR.tar.gz"
+          dist: /appdata/artifacts
       - name: Copy artifacts after build - SSTATE_DIR (11)
-        uses: https://github.com/appleboy/scp-action@v0.1.7
+        uses: youxingz/sshpass-scp-action@v3
         with:
-          command_timeout: 60m
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
-          target: /appdata/artifacts
-          debug: true
+          src: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
+          dist: /appdata/artifacts
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
