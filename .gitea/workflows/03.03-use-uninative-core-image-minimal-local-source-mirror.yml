@@ -162,12 +162,20 @@ jobs:
           ls
           popd
       - name: Experiment with scp
-        run: |
-          pushd ${{env.WORK_DIR}}/sources
-          tree
-          echo rsync -avr . ${{env.LOCAL_MOUNTED_ON_SERVER}}
-          tree ${{env.LOCAL_MOUNTED_ON_SERVER}}
-          popd
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: ${{env.WORK_DIR}}/sources
+          dist: /appdata/artifacts/workspace/rber/gitea-yocto-build/workdir/artifacts
+        # run: |
+        #   pushd ${{env.WORK_DIR}}/sources
+        #   tree
+        #   echo rsync -avr . ${{env.LOCAL_MOUNTED_ON_SERVER}}
+        #   tree ${{env.LOCAL_MOUNTED_ON_SERVER}}
+        #   popd
       # - name: Checkout manifest repo
       #   run: |
       #     mkdir -p ${{env.WORK_DIR}}/sources
