@@ -29,7 +29,7 @@ jobs:
        TEMPLATE_COMMON: template-common-master
        YP_VERSION: walnascar
        ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
-       LOCAL_MOUNTED_ON_SERVER: /workspace/rber/gitea-yocto-build
+       LOCAL_MOUNTED_ON_SERVER: /server-local
        NO_SSTATE_MIRRORS: yes
        POPULATE_SSTATE_MIRROR: no
        # used for local source mirror:
