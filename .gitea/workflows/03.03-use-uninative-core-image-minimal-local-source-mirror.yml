@@ -163,11 +163,11 @@ jobs:
           popd
       - name: Experiment with scp
         run: |
-          ls ${{env.WORK_DIR}}/sources
-          echo "${{env.network}}"
-          mount
-          echo "cp -r ${{env.WORK_DIR}}/* ${{env.LOCAL_MOUNTED_ON_SERVER}}/"
-          cp -r ${{env.WORK_DIR}}/* ${{env.LOCAL_MOUNTED_ON_SERVER}}/
+          pushd ${{env.WORK_DIR}}/sources
+          tree
+          echo rsync -avr . ${{env.LOCAL_MOUNTED_ON_SERVER}}
+          tree ${{env.LOCAL_MOUNTED_ON_SERVER}}
+          popd
       # - name: Checkout manifest repo
       #   run: |
       #     mkdir -p ${{env.WORK_DIR}}/sources
