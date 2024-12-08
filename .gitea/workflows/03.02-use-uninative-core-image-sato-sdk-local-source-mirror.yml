@@ -806,4 +806,4 @@ jobs:
       - name: Finished 03.02-use-uninative-core-sato-sdk-local-source-mirror
         id: finished_03_02
         run: |
-          echo "Finished Finished 03.02-use-uninative-core-sato-sdk-local-source-mirror"
+          echo "Finished 03.02-use-uninative-core-sato-sdk-local-source-mirror"

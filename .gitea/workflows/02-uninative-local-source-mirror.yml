@@ -10,6 +10,10 @@ jobs:
     # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     runs-on: yocto-build-walnascar
+    # The timeout for a job to be finished.
+    # Please note that the Gitea instance also has a timeout (3h by default) for the job.
+    # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
+    # 100min = 16,6667 hrs
     timeout-minutes: 1000
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
@@ -47,14 +51,13 @@ jobs:
        # --> only one yes, the other no
        BUILD_UNINATIVE_TARBALL: yes
        USE_UNINATIVE_TARBALL: no
+       USE_UNINATIVE_TARBALL_LOCAL: no
        DONT_USE_UNINATIVE_TARBALL: yes
        POPULATE_UNINATIVE_TARBALL: yes
        UNINATIVE_TARBALL_VERSION: 4.6
-       BITBAKE_ZERO: uninative-tarball
-       #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
-       BITBAKE_ZERO_ALLOW_ERROR: no
        # <-- only one yes, the other no
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+       THE_UNINATIVE_LOCAL_URL: file:///${{env.WORK_DIR}}/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
        PR_SERVER: 192.168.42.182:18586
@@ -64,6 +67,9 @@ jobs:
        WEB_SERVER: 192.168.42.182:8941
        # nginx:
        #WEB_SERVER: 10.0.0.182:8053
+       BITBAKE_ZERO: uninative-tarball
+       #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
+       BITBAKE_ZERO_ALLOW_ERROR: no
        #BITBAKE_ONE: core-image-minimal
        #BITBAKE_ONE: 'core-image-minimal --runall=fetch'
        BITBAKE_ONE: empty
@@ -149,6 +155,10 @@ jobs:
         id: bitbake_two
         run: |
           echo "::set-output name=bitbake_two::${{env.BITBAKE_TWO}}"
+      - name: Get the_allowed_networks
+        id: the_allowed_networks
+        run: |
+          echo "::set-output name=the_allowed_networks::${{env.THE_ALLOWED_NETWORKS}}"
       - name: Checkout workflow repo
         run: |
           mkdir -p ${{env.WORK_DIR}}/sources
@@ -352,17 +362,19 @@ jobs:
         if: ${{ env.USE_BB_ALLOWED_NETWORKS == 'yes' }}
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
-          echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
-          echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
+          #echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
+          echo "BB_ALLOWED_NETWORKS = ${{ env.THE_ALLOWED_NETWORKS }}" >> site.conf
+          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed
         if: ${{ env.USE_VAR_WWW == 'yes' }}
         run: |
+          # --> source mirror local
           mkdir -p ${{env.WORK_DIR}}/source_mirror
           pushd ${{env.WORK_DIR}}
           time wget -t 2 -T 30 --passive-ftp 'http://${{ steps.web_server.outputs.web_server }}/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/DL_DIR.tar.gz'
-          tar xvf DL_DIR.tar.gz -C ${{env.WORK_DIR}}/source_mirror
+          tar xf DL_DIR.tar.gz -C ${{env.WORK_DIR}}/source_mirror
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           cp DL_DIR.tar.gz ${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed.tar.gz
           rm -f DL_DIR.tar.gz
@@ -370,6 +382,14 @@ jobs:
           #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           #cat site.conf
           popd
+          # <-- source mirror local
+          # --> uninative local
+          mkdir -p ${{env.WORK_DIR}}/uninative
+          pushd ${{env.WORK_DIR}}/uninative
+          time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
+          tree ${{env.WORK_DIR}}/uninative
+          popd
+          # <-- uninative local
       # - name: Fix site.conf symlinks
       #   run: |
       #     pushd ${{env.WORK_DIR}}
@@ -382,8 +402,8 @@ jobs:
         run: |
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           pushd ${{env.WORK_DIR}}/artifacts
-          if [ -d ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} ];then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-${{ env.META_RESY }}-${{ env.TEMPLATE_COMMON }}.tar.gz -C ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} .; fi
-          if [ -d ${{env.WORK_DIR}}/sources ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sources.tar.gz -C ${{env.WORK_DIR}}/sources .; fi
+          if [ -d ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} ];then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-${{ env.META_RESY }}-${{ env.TEMPLATE_COMMON }}.tar.gz -C ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }} .; fi
+          if [ -d ${{env.WORK_DIR}}/sources ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sources.tar.gz -C ${{env.WORK_DIR}}/sources .; fi
           pwd
           ls -lah ${{env.WORK_DIR}}/artifacts
           popd
@@ -394,15 +414,48 @@ jobs:
       #     name: test
       #     path: ${{env.WORK_DIR}}/artifacts
 ####################### <-- not supported yet ???
-      - name: Copy artifacts before build
-        uses: https://github.com/appleboy/scp-action@v0.1.4
+      - name: Copy artifacts before build - what is there? (0)
+        run: |
+          echo "ls ${{env.WORK_DIR}}/artifacts/"
+          ls "${{env.WORK_DIR}}/artifacts/"
+      # - name: Copy artifacts before build
+      #   uses: https://github.com/appleboy/scp-action@v0.1.7
+      #   with:
+      #     command_timeout: 60m
+      #     host: ${{ secrets.SCP_HOST }}
+      #     username: ${{ secrets.SCP_USERNAME }}
+      #     password: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     source: "${{env.WORK_DIR}}/artifacts/*"
+      #     target: /appdata/artifacts
+      #     debug: true
+      - name: Copy artifacts before build - template-common (1)
+        uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*"
-          target: /appdata/artifacts
+          src: "${{env.WORK_DIR}}/artifacts/*-template-common*.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts before build - source_mirror_${{env.YP_VERSION}}_compressed (2)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts before build - sources (3)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-sources.tar.gz"
+          dist: /appdata/artifacts
 #######################################  
       # - name: bitbake uninative-tarball
       #   if: ${{ env.BUILD_UNINATIVE_TARBALL == 'yes' }}
@@ -503,18 +556,22 @@ jobs:
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           pushd ${{env.WORK_DIR}}/artifacts
           set +x
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy .; fi
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
+          # ipk  licenses  sdk  spdx
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-ipk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-licenses.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-spdx.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory .; fi
           # check also _master
-          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_master .; fi
-          if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} .; fi
+          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_master .; fi
+          if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} .; fi
           # check also _master
-          if [ -d ${{env.WORK_DIR}}/sstate_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_master .; fi
-          if [ -d ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} .; fi
+          if [ -d ${{env.WORK_DIR}}/sstate_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_master .; fi
+          if [ -d ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} .; fi
           # check also _master
-          if [ -d ${{env.WORK_DIR}}/persistent_master ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_master .; fi
-          if [ -d ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} .; fi
+          if [ -d ${{env.WORK_DIR}}/persistent_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_master .; fi
+          if [ -d ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} .; fi
           pwd
           ls -lah ${{env.WORK_DIR}}/artifacts
           popd
@@ -541,14 +598,10 @@ jobs:
           popd
           # make tarball from source_mirror 
           pushd ${{env.WORK_DIR}}/artifacts
-          tar -czvf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }} .
+          tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }} .
           # remove source_mirror dir
           rm -rf ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
           popd
-          #pushd ${{env.WORK_DIR}}/sources
-          #ls ${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/cleanup
-          #mkdir 
-          #popd
 ####################### --> not supported yet ???
       # - name: Upload Artifact
       #   uses: actions/upload-artifact@v3
@@ -556,15 +609,82 @@ jobs:
       #     name: test
       #     path: ${{env.WORK_DIR}}/artifacts
 ####################### <-- not supported yet ???
-      - name: Copy artifacts after build
-        uses: https://github.com/appleboy/scp-action@v0.1.4
+      - name: Copy artifacts after build - what is there? (0)
+        run: |
+          echo "ls ${{env.WORK_DIR}}/artifacts/"
+          ls "${{env.WORK_DIR}}/artifacts/"
+      - name: Copy artifacts after build - buildhistory (4)
+        uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
-          username: ${{ secrets.SCP_USERNAME }}
-          password: ${{ secrets.SCP_PASSWORD }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          source: "${{env.WORK_DIR}}/artifacts/*"
-          target: /appdata/artifacts
+          src: "${{env.WORK_DIR}}/artifacts/*-buildhistory.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts after build - conf (5)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-conf.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts after build - deploy-ipk (6)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts after build - deploy-licenses (7)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts after build - deploy-spdx (8)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-spdx.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts after build - DL_DIR (9)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-DL_DIR.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts after build - PERSISTENT_DIR (10)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-PERSISTENT_DIR.tar.gz"
+          dist: /appdata/artifacts
+      - name: Copy artifacts after build - SSTATE_DIR (11)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
+          dist: /appdata/artifacts
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
@@ -664,7 +784,7 @@ jobs:
               rm -rf /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
             if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
-              mv /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori 
+              mv /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
             mkdir -p /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
             tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}
@@ -672,3 +792,7 @@ jobs:
             echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
             ls -lah
             popd
+      - name: Finished 02-uninative-local-source-mirror
+        id: finished_02
+        run: |
+          echo "Finished 02-uninative-local-source-mirror"
