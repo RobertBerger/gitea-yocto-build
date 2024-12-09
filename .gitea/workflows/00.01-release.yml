@@ -20,7 +20,7 @@ jobs:
           echo "$(free -mh)"
           echo "$(id)"
   # -->
-  call-runall-fetch:
+  # call-runall-fetch:
     # get all the sources from outside
     #   - we use premirros in order to speed up checking out kernel, u-boot,...
     #     - because of this we need a hack (symlink) from original to mirror
