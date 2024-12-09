@@ -709,6 +709,9 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           script: |
+            echo "What is here?"
+            echo "ls ${{env.ARTIFACTS_ON_SERVER}}/"
+            ls ${{env.ARTIFACTS_ON_SERVER}}/
             if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
                rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
@@ -716,12 +719,12 @@ jobs:
                mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
             mkdir /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-            tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}/
             if [ $? -ne 0 ]; then
                exit 1
             fi
             pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-            echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz" > build-version.txt
+            echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz" > build-version.txt
             ls -lah
             popd
       - name: Populate uninative-tarball on server
