@@ -686,6 +686,15 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
           dist: /appdata/artifacts
+      - name: Copy artifacts after build - deploy-sdk (12)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-sdk.tar.gz"
+          dist: /appdata/artifacts
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
@@ -759,13 +768,13 @@ jobs:
                  rm -rf deploy-temp
               fi
               mkdir deploy-temp
-              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
+              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
               pushd deploy-temp
                 mkdir -p /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}
                 cp sdk/* /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                 pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                   ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
-                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz" > build-version.txt
+                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz" > build-version.txt
                   sha256sum=($(sha256sum x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz)) && echo ${sha256sum} > sha256sum.txt
                   cat sha256sum.txt
                   ls -lah
