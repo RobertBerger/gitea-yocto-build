@@ -31,9 +31,9 @@ jobs:
     #
     # bitbake uninative-tarball --runall=fetch
     # bitbake core-image-minimal --runall=fetch
-    needs: release
-    uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
-    secrets: inherit
+    # needs: release
+    # uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
+    # secrets: inherit
   # <--
   # -->
   call-uninative-from-local-source-mirror:
@@ -51,7 +51,8 @@ jobs:
     #   - we create a file with the sha256sum of it
     #   - we create a symlink for it 
     #if: ${{ always() }} #This will make your workflow2 executed even if workflow1 fails, remove this, if you want to run this only on success of workflow1
-    needs: call-runall-fetch
+    needs: release
+    # needs: call-runall-fetch
     uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
     secrets: inherit
   # <--

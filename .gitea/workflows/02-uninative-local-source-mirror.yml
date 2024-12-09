@@ -28,7 +28,8 @@ jobs:
        META_RESY: meta-resy-master
        TEMPLATE_COMMON: template-common-master
        YP_VERSION: walnascar
-       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
+       #ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
+       ARTIFACTS_ON_SERVER: /appdata/artifacts
        NO_SSTATE_MIRRORS: yes
        POPULATE_SSTATE_MIRROR: no
        NO_IMAGE_BUILDINFO: yes
