@@ -771,7 +771,7 @@ jobs:
               tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
               pushd deploy-temp
                 mkdir -p /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}
-                cp sdk/* /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+                cp * /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                 pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                   ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
                   echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz" > build-version.txt
