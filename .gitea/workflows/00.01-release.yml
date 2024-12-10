@@ -20,7 +20,7 @@ jobs:
           echo "$(free -mh)"
           echo "$(id)"
   # -->
-   call-runall-fetch:
+  call-runall-fetch:
     # get all the sources from outside
     #   - we use premirros in order to speed up checking out kernel, u-boot,...
     #     - because of this we need a hack (symlink) from original to mirror
@@ -31,9 +31,9 @@ jobs:
     #
     # bitbake uninative-tarball --runall=fetch
     # bitbake core-image-minimal --runall=fetch
-     needs: release
-     uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
-     secrets: inherit
+    needs: release
+    uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
+    secrets: inherit
   # <--
   # -->
   # call-uninative-from-local-source-mirror:
