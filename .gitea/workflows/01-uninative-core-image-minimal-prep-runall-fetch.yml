@@ -539,10 +539,10 @@ jobs:
              cd ${{env.WORK_DIR}}
              if [ "$BITBAKE_THREE_ALLOW_ERROR" == "yes" ]; then
                 # allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_three }} || true
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }} || true
              else
                 # don't allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_three }}
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }}
              fi
           fi
         env:
@@ -558,12 +558,12 @@ jobs:
           else
              echo "BITBAKE_FOUR is $BITBAKE_FOUR"
              cd ${{env.WORK_DIR}}
-             if [ "$BITBAKE_THREE_ALLOW_ERROR" == "yes" ]; then
+             if [ "$BITBAKE_FOUR_ALLOW_ERROR" == "yes" ]; then
                 # allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_four }} || true
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_four.outputs.bitbake_four }} || true
              else
                 # don't allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_four }}
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_four.outputs.bitbake_four }}
              fi
           fi
         env:
