@@ -25,3 +25,14 @@ find . -name "*.done" -exec rm -f {} \;
 #ln -sf gitshallow_192.168.42.182.8939.robert.berger.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz
 ln -sf gitshallow_192.168.42.182.8939.robert.berger.linux-stable.git_adc2186-1_linux-6.12.y.tar.gz gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_adc2186-1_linux-6.12.y.tar.gz
 #popd
+#
+# symlink with sed - maybe from the job and not from here?
+#
+# GITEA_GIT_MIRROR: 192.168.42.182:8939
+# sed expression:
+# 's/:/./'
+# 192.168.42.182:8939 -> 192.168.42.182.8939
+#
+# symlink with sed:
+# 's/192.168.42.182.8939.robert.berger/git.kernel.org.pub.scm.linux.kernel.git.stable/'
+# gitshallow_192.168.42.182.8939.robert.berger.linux-stable.git_adc2186-1_linux-6.12.y.tar.gz -> gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_adc2186-1_linux-6.12.y.tar.gz
