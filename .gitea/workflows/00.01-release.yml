@@ -19,22 +19,23 @@ jobs:
           echo "CPUs: $(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}')"
           echo "$(free -mh)"
           echo "$(id)"
-  # # -->
-  # call-runall-fetch:
-  #   # get all the sources from outside
-  #   #   - we use premirros in order to speed up checking out kernel, u-boot,...
-  #   #     - because of this we need a hack (symlink) from original to mirror
-  #   #     - e.g. gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz -> gitshallow_10.0.0.182.8939.robert.berger.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz
-  #   # source mirrors (tarball for local, network source-mirror) are populated
-  #   # (networked accessible) PR_SERVER is active
-  #   # (networked accessible) HASH_SERVER is active
-  #   #
-  #   # bitbake uninative-tarball --runall=fetch
-  #   # bitbake core-image-minimal --runall=fetch
-  #   needs: release
-  #   uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
-  #   secrets: inherit
-  # # <--
+  # -->
+  call-runall-fetch:
+    # get all the sources from outside
+    #   - we use premirros in order to speed up checking out kernel, u-boot,...
+    #     - because of this we need a hack (symlink) from original to mirror
+    #     - e.g. gitshallow_git.kernel.org.pub.scm.linux.kernel.git.stable.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz -> gitshallow_10.0.0.182.8939.robert.berger.linux-stable.git_ebdb69c-1_linux-6.1.y.tar.gz
+    # source mirrors (tarball for local, network source-mirror) are populated
+    # (networked accessible) PR_SERVER is active
+    # (networked accessible) HASH_SERVER is active
+    #
+    # bitbake uninative-tarball --runall=fetch
+    # bitbake core-image-minimal --runall=fetch
+    # bitbake core-image-sato-sdk --runall=fetch
+    needs: release
+    uses: ./.gitea/workflows/01-uninative-core-image-minimal-prep-runall-fetch.yml
+    secrets: inherit
+  # <--
   # -->
 #  call-uninative-from-local-source-mirror:
     # BB_NO_NETWORK is active
@@ -49,7 +50,7 @@ jobs:
     #
     # populate uninative tarball
     #   - we create a file with the sha256sum of it
-    #   - we create a symlink for it 
+    #   - we create a symlink for it (does not work) - we copy it also to DL_DIR.tar.gz
     #if: ${{ always() }} #This will make your workflow2 executed even if workflow1 fails, remove this, if you want to run this only on success of workflow1
 #    needs: release
     # needs: call-runall-fetch
@@ -58,6 +59,7 @@ jobs:
   # <--
   # -->
 #  call-use-uninative-core-image-minimal-local-source-mirror:
+    # make sure we can build core-image-minimal only from local source mirror
 #    needs: release
   #   needs: call-uninative-from-local-source-mirror
 #    uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
@@ -66,13 +68,14 @@ jobs:
 #    secrets: inherit
   # # <--
   # -->
-  call-use-uninative-core-image-sato-sdk-source-mirror:
-    needs: release
+  # call-use-uninative-core-image-sato-sdk-local-source-mirror:
+   # make sure we can build core-image-sato-sdk only from local source mirror
+   # needs: release
   #   needs: call-use-uninative-core-image-minimal-local-source-mirror
   #   #uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
-    uses: ./.gitea/workflows/03.02-use-uninative-core-image-sato-sdk-local-source-mirror.yml
+   # uses: ./.gitea/workflows/03.02-use-uninative-core-image-sato-sdk-local-source-mirror.yml
   #   #uses: ./.gitea/workflows/03.03-use-uninative-core-image-minimal-local-source-mirror.yml
-    secrets: inherit
+   # secrets: inherit
   # # <--
   # # -->
   # call-use-uninative-core-image-sato-sdk-populate-sstate-mirror:

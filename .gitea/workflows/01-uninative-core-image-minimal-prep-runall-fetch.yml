@@ -76,6 +76,10 @@ jobs:
        #BITBAKE_TWO: empty
        BITBAKE_TWO: 'core-image-sato-sdk --runall=fetch'
        BITBAKE_TWO_ALLOW_ERROR: yes
+       BITBAKE_THREE: 'core-image-sato-sdk -c populate_sdk --runall=fetch'
+       BITBAKE_THREE_ALLOW_ERROR: yes
+       BITBAKE_FOUR: 'core-image-sato-sdk -c populate_sdk --runall=fetch'
+       BITBAKE_FOUR_ALLOW_ERROR: yes
        NOTE: uninative-core-image-minimal-runall-fetch-prep-mirror
     #name: Yocto build - runall-fetch-prep-mirror
     steps:
