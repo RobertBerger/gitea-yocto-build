@@ -78,7 +78,7 @@ jobs:
        BITBAKE_TWO_ALLOW_ERROR: yes
        BITBAKE_THREE: 'core-image-sato-sdk -c populate_sdk --runall=fetch'
        BITBAKE_THREE_ALLOW_ERROR: yes
-       BITBAKE_FOUR: 'core-image-sato-sdk -c populate_sdk --runall=fetch'
+       BITBAKE_FOUR: 'core-image-sato-sdk -c populate_sdk_ext --runall=fetch'
        BITBAKE_FOUR_ALLOW_ERROR: yes
        NOTE: uninative-core-image-minimal-runall-fetch-prep-mirror
     #name: Yocto build - runall-fetch-prep-mirror
@@ -159,6 +159,14 @@ jobs:
         id: bitbake_two
         run: |
           echo "::set-output name=bitbake_two::${{env.BITBAKE_TWO}}"
+      - name: Get bitbake_three
+        id: bitbake_three
+        run: |
+          echo "::set-output name=bitbake_three::${{env.BITBAKE_THREE}}"
+      - name: Get bitbake_four
+        id: bitbake_four
+        run: |
+          echo "::set-output name=bitbake_four::${{env.BITBAKE_FOUR}}"
       - name: Get the_allowed_networks
         id: the_allowed_networks
         run: |
@@ -521,7 +529,49 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_TWO: ${{ env.BITBAKE_TWO }}
-#######################################  
+#######################################
+      - name: bitbake ${{ env.BITBAKE_THREE }}
+        run: |
+          if [ "$BITBAKE_THREE" == "empty" ]; then
+             echo "BITBAKE_THREE is $BITBAKE_THREE"
+          else
+             echo "BITBAKE_THREE is $BITBAKE_THREE"
+             cd ${{env.WORK_DIR}}
+             if [ "$BITBAKE_THREE_ALLOW_ERROR" == "yes" ]; then
+                # allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_three }} || true
+             else
+                # don't allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_three }}
+             fi
+          fi
+        env:
+          # export WORKDIR to resy-cooker.sh script:
+          WORKDIR: ${{ env.WORK_DIR }}
+          WORKSPACE: "jenkins"
+          BITBAKE_THREE: ${{ env.BITBAKE_THREE }}
+#######################################
+      - name: bitbake ${{ env.BITBAKE_FOUR }}
+        run: |
+          if [ "$BITBAKE_FOUR" == "empty" ]; then
+             echo "BITBAKE_FOUR is $BITBAKE_FOUR"
+          else
+             echo "BITBAKE_FOUR is $BITBAKE_FOUR"
+             cd ${{env.WORK_DIR}}
+             if [ "$BITBAKE_THREE_ALLOW_ERROR" == "yes" ]; then
+                # allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_four }} || true
+             else
+                # don't allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_two.outputs.bitbake_four }}
+             fi
+          fi
+        env:
+          # export WORKDIR to resy-cooker.sh script:
+          WORKDIR: ${{ env.WORK_DIR }}
+          WORKSPACE: "jenkins"
+          BITBAKE_FOUR: ${{ env.BITBAKE_FOUR }}
+#######################################
   #   - name: bitbake core-image-sato-sdk
   #     run: |
   #       cd ${{env.WORK_DIR}}
