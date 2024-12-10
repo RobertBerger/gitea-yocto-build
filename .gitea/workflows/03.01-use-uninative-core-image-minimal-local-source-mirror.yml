@@ -28,7 +28,8 @@ jobs:
        META_RESY: meta-resy-master
        TEMPLATE_COMMON: template-common-master
        YP_VERSION: walnascar
-       ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
+       #ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
+       ARTIFACTS_ON_SERVER: /appdata/artifacts
        NO_SSTATE_MIRRORS: yes
        POPULATE_SSTATE_MIRROR: no
        # used for local source mirror:
@@ -733,6 +734,9 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           script: |
+            echo "What is here?"
+            echo "ls ${{env.ARTIFACTS_ON_SERVER}}/"
+            ls ${{env.ARTIFACTS_ON_SERVER}}/
             if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
                rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
@@ -768,13 +772,13 @@ jobs:
                  rm -rf deploy-temp
               fi
               mkdir deploy-temp
-              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
+              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
               pushd deploy-temp
                 mkdir -p /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}
-                cp sdk/* /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+                cp * /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                 pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                   ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
-                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz" > build-version.txt
+                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz" > build-version.txt
                   sha256sum=($(sha256sum x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz)) && echo ${sha256sum} > sha256sum.txt
                   cat sha256sum.txt
                   ls -lah

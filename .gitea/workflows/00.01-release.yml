@@ -36,7 +36,7 @@ jobs:
   #   secrets: inherit
   # # <--
   # -->
-  call-uninative-from-local-source-mirror:
+#  call-uninative-from-local-source-mirror:
     # BB_NO_NETWORK is active
     # Build the uninative tarball
     # get all the sources from a local source-mirror
@@ -51,19 +51,19 @@ jobs:
     #   - we create a file with the sha256sum of it
     #   - we create a symlink for it 
     #if: ${{ always() }} #This will make your workflow2 executed even if workflow1 fails, remove this, if you want to run this only on success of workflow1
-    needs: release
+#    needs: release
     # needs: call-runall-fetch
-    uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
-    secrets: inherit
+#    uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
+#    secrets: inherit
   # <--
-  # # -->
-  # call-use-uninative-core-image-minimal-local-source-mirror:
-  #   #needs: release
+  # -->
+  call-use-uninative-core-image-minimal-local-source-mirror:
+    needs: release
   #   needs: call-uninative-from-local-source-mirror
-  #   uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
+    uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
   #   #uses: ./.gitea/workflows/03.02-use-uninative-core-image-sato-sdk-local-source-mirror.yml
   #   #uses: ./.gitea/workflows/03.03-use-uninative-core-image-minimal-local-source-mirror.yml
-  #   secrets: inherit
+    secrets: inherit
   # # <--
   # # -->
   # call-use-uninative-core-image-sato-sdk-source-mirror:
