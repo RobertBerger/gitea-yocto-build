@@ -480,15 +480,15 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-template-common*.tar.gz"
           dist: /appdata/artifacts
-      - name: Copy artifacts before build - source_mirror_${{env.YP_VERSION}}_compressed (2)
-        uses: youxingz/sshpass-scp-action@v3
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          user: ${{ secrets.SCP_USERNAME }}
-          pass: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          src: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
-          dist: /appdata/artifacts
+      # - name: Copy artifacts before build - source_mirror_${{env.YP_VERSION}}_compressed (2)
+      #   uses: youxingz/sshpass-scp-action@v3
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     user: ${{ secrets.SCP_USERNAME }}
+      #     pass: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     src: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
+      #     dist: /appdata/artifacts
       - name: Copy artifacts before build - sources (3)
         uses: youxingz/sshpass-scp-action@v3
         with:
