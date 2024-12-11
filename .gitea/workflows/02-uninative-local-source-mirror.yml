@@ -368,7 +368,7 @@ jobs:
           #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
-      - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed
+      - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed - source mirror local
         if: ${{ env.USE_VAR_WWW == 'yes' }}
         run: |
           # --> source mirror local
@@ -384,13 +384,13 @@ jobs:
           #cat site.conf
           popd
           # <-- source mirror local
-          # --> uninative local
-          mkdir -p ${{env.WORK_DIR}}/uninative
-          pushd ${{env.WORK_DIR}}/uninative
-          time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
-          tree ${{env.WORK_DIR}}/uninative
-          popd
-          # <-- uninative local
+      #    # --> uninative local
+      #    mkdir -p ${{env.WORK_DIR}}/uninative
+      #    pushd ${{env.WORK_DIR}}/uninative
+      #    time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
+      #    tree ${{env.WORK_DIR}}/uninative
+      #    popd
+      #    # <-- uninative local
       # - name: Fix site.conf symlinks
       #   run: |
       #     pushd ${{env.WORK_DIR}}
@@ -399,6 +399,16 @@ jobs:
       #     # export WORKDIR to resy-cooker.sh script:
       #     WORKDIR: ${{ env.WORK_DIR }}
       #     WORKSPACE: "jenkins"
+      - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed - uninative local
+        if: ${{ env.USE_UNINATIVE_TARBALL_LOCAL == 'yes' }}
+        run: |
+          # --> uninative local
+          mkdir -p ${{env.WORK_DIR}}/uninative
+          pushd ${{env.WORK_DIR}}/uninative
+          time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
+          tree ${{env.WORK_DIR}}/uninative
+          popd
+          # <-- uninative local      
       - name: Compress Artifacts before build
         run: |
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
