@@ -81,14 +81,15 @@ jobs:
 #    secrets: inherit
   # <--
   # -->
-  call-populate-all-sstate-mirror:
-    needs: release
+#  call-populate-all-sstate-mirror:
+#    needs: release
   #  needs: call-use-uninative-core-image-sato-sdk-local-source-mirror
-    uses: ./.gitea/workflows/04-populate-all-sstate.mirror.yml
-    secrets: inherit
+#    uses: ./.gitea/workflows/04.00-populate-all-sstate.mirror.yml
+#    secrets: inherit
   # <--
+  # now we should have a 99% SSTATE match
   # -->
-#  call-use-uninative-core-image-sato-sdk-populate-sstate-mirror:
+  call-use-uninative-use-source-mirror-use-sstate-mirror:
   # @@@TODO: use local source mirror - maybe not ;)
   #   # get/use the uninative tarball from an internal web server
   #   # get all sources from a network accessible source-mirror
@@ -103,7 +104,8 @@ jobs:
   #   # populate (network accessible) sstate-mirror   
   #   # now we should have a 99% SSTATE match
   #   #
+    needs: release
 #    needs: call-use-uninative-core-image-sato-sdk-local-source-mirror
-#    uses: ./.gitea/workflows/04-use-uninative-core-image-sato-sdk-populate-sstate-mirror.yml
-#    secrets: inherit
+    uses: ./.gitea/workflows/04.01-call-use-uninative-use-source-mirror-use-sstate-mirror.yml
+    secrets: inherit
   # # <--

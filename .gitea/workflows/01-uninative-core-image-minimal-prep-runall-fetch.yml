@@ -6,7 +6,7 @@ on:
   workflow_call:
 
 jobs:
-  release-uninative-core-image-minimal-runall-fetch-prep-mirror-job:
+  release-uninative-core-image-minimal-prep-runall-fetch-job:
     # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     runs-on: yocto-build-walnascar
