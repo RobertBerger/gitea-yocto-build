@@ -74,13 +74,13 @@ jobs:
        #WEB_SERVER: 10.0.0.182:8053
        #BITBAKE_ZERO: uninative-tarball 
        #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
-       BITBAKE_ZERO: empty
+       BITBAKE_ZERO: core-image-minimal
        BITBAKE_ZERO_ALLOW_ERROR: no
        #BITBAKE_ONE: empty
-       BITBAKE_ONE: core-image-minimal
+       BITBAKE_ONE: core-image-sato-sdk
        BITBAKE_ONE_ALLOW_ERROR: no
        #BITBAKE_TWO: empty
-       BITBAKE_TWO: core-image-sato-sdk
+       BITBAKE_TWO: 'core-image-sato-sdk -c populate_sdk'
        BITBAKE_TWO_ALLOW_ERROR: no
        NOTE: use-uninative-use-source-mirror-use-sstate-mirror
     #name: Yocto build - core-image-minimal-local-source-mirror
