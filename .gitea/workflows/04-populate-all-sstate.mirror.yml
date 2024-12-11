@@ -168,7 +168,7 @@ jobs:
           popd
       - name: scp add-all-sstates.sh to /appdata/artifacts
         uses: youxingz/sshpass-scp-action@v3
-         with:
+        with:
            host: ${{ secrets.SCP_HOST }}
            user: ${{ secrets.SCP_USERNAME }}
            pass: ${{ secrets.SCP_PASSWORD }}
