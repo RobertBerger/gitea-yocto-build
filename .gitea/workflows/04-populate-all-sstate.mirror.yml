@@ -175,6 +175,20 @@ jobs:
            port: ${{ secrets.SCP_PORT }}
            src: "${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/sstates/add-all-sstates.sh"
            dist: /appdata/artifacts      
+      - name: combine all *-SSTATE_DIR.tar.gz on server and transfer to sstate-mirror
+#        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
+        uses: https://github.com/appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          script: |
+            # execute the magic script
+            pushd ${{env.ARTIFACTS_ON_SERVER}}
+            ./add-all-sstates.sh
+            popd
+            ls ${{env.ARTIFACTS_ON_SERVER}}/
 #           # cleanup source_mirror
 #           pushd ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
 #           ${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/cleanup/cleanup.sh
