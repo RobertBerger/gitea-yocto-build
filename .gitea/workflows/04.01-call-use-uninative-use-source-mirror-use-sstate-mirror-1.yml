@@ -783,15 +783,15 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
           dist: /appdata/artifacts
-      - name: Copy artifacts after build - deploy-sdk (12)
-        uses: youxingz/sshpass-scp-action@v3
-        with:
-          host: ${{ secrets.SCP_HOST }}
-          user: ${{ secrets.SCP_USERNAME }}
-          pass: ${{ secrets.SCP_PASSWORD }}
-          port: ${{ secrets.SCP_PORT }}
-          src: "${{env.WORK_DIR}}/artifacts/*-deploy-sdk.tar.gz"
-          dist: /appdata/artifacts
+      # - name: Copy artifacts after build - deploy-sdk (12)
+      #   uses: youxingz/sshpass-scp-action@v3
+      #   with:
+      #     host: ${{ secrets.SCP_HOST }}
+      #     user: ${{ secrets.SCP_USERNAME }}
+      #     pass: ${{ secrets.SCP_PASSWORD }}
+      #     port: ${{ secrets.SCP_PORT }}
+      #     src: "${{env.WORK_DIR}}/artifacts/*-deploy-sdk.tar.gz"
+      #     dist: /appdata/artifacts
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
