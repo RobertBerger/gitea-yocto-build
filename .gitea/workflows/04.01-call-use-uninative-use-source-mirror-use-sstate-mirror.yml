@@ -82,6 +82,10 @@ jobs:
        #BITBAKE_TWO: empty
        BITBAKE_TWO: 'core-image-sato-sdk -c populate_sdk'
        BITBAKE_TWO_ALLOW_ERROR: no
+       BITBAKE_THREE: 'core-image-sato-sdk -c populate_sdk_ext'
+       BITBAKE_THREE_ALLOW_ERROR: no
+       BITBAKE_FOUR: buildtools-extended-tarball
+       BITBAKE_FOUR_ALLOW_ERROR: no
        NOTE: use-uninative-use-source-mirror-use-sstate-mirror
     #name: Yocto build - core-image-minimal-local-source-mirror
     steps:
@@ -169,6 +173,14 @@ jobs:
         id: bitbake_two
         run: |
           echo "::set-output name=bitbake_two::${{env.BITBAKE_TWO}}"
+      - name: Get bitbake_three
+        id: bitbake_three
+        run: |
+          echo "::set-output name=bitbake_three::${{env.BITBAKE_THREE}}"
+      - name: Get bitbake_four
+        id: bitbake_four
+        run: |
+          echo "::set-output name=bitbake_four::${{env.BITBAKE_FOUR}}"
       - name: Get the_allowed_networks
         id: the_allowed_networks
         run: |
@@ -573,7 +585,49 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_TWO: ${{ env.BITBAKE_TWO }}
-#######################################  
+#######################################
+      - name: bitbake ${{ env.BITBAKE_THREE }}
+        run: |
+          if [ "$BITBAKE_THREE" == "empty" ]; then
+             echo "BITBAKE_THREE is $BITBAKE_THREE"
+          else
+             echo "BITBAKE_THREE is $BITBAKE_THREE"
+             cd ${{env.WORK_DIR}}
+             if [ "$BITBAKE_THREE_ALLOW_ERROR" == "yes" ]; then
+                # allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }} || true
+             else
+                # don't allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }}
+             fi
+          fi
+        env:
+          # export WORKDIR to resy-cooker.sh script:
+          WORKDIR: ${{ env.WORK_DIR }}
+          WORKSPACE: "jenkins"
+          BITBAKE_THREE: ${{ env.BITBAKE_THREE }}
+#######################################
+      - name: bitbake ${{ env.BITBAKE_FOUR }}
+        run: |
+          if [ "$BITBAKE_FOUR" == "empty" ]; then
+             echo "BITBAKE_FOUR is $BITBAKE_FOUR"
+          else
+             echo "BITBAKE_FOUR is $BITBAKE_FOUR"
+             cd ${{env.WORK_DIR}}
+             if [ "$BITBAKE_FOUR_ALLOW_ERROR" == "yes" ]; then
+                # allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_four.outputs.bitbake_four }} || true
+             else
+                # don't allow error:
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_four.outputs.bitbake_four }}
+             fi
+          fi
+        env:
+          # export WORKDIR to resy-cooker.sh script:
+          WORKDIR: ${{ env.WORK_DIR }}
+          WORKSPACE: "jenkins"
+          BITBAKE_FOUR: ${{ env.BITBAKE_FOUR }}
+#######################################
   #   - name: bitbake core-image-sato-sdk
   #     run: |
   #       cd ${{env.WORK_DIR}}
@@ -727,6 +781,15 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
           dist: /appdata/artifacts
+      - name: Copy artifacts after build - deploy-sdk (12)
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-sdk.tar.gz"
+          dist: /appdata/artifacts
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
@@ -765,6 +828,9 @@ jobs:
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
           script: |
+            echo "What is here?"
+            echo "ls ${{env.ARTIFACTS_ON_SERVER}}/"
+            ls ${{env.ARTIFACTS_ON_SERVER}}/
             if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
                rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
             fi
