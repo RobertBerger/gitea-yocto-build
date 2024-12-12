@@ -6,7 +6,7 @@ on:
   workflow_call:
 
 jobs:
-  release-use-uninative-use-source-mirror-use-sstate-mirror-job:
+  release-use-uninative-use-source-mirror-use-sstate-mirror-job-1:
     # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     runs-on: yocto-build-walnascar

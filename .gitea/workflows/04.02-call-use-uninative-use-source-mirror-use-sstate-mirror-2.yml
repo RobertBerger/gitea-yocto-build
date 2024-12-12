@@ -6,7 +6,7 @@ on:
   workflow_call:
 
 jobs:
-  release-use-uninative-use-source-mirror-use-sstate-mirror-job:
+  release-use-uninative-use-source-mirror-use-sstate-mirror-job-2:
     # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     runs-on: yocto-build-walnascar
@@ -74,19 +74,21 @@ jobs:
        #WEB_SERVER: 10.0.0.182:8053
        #BITBAKE_ZERO: uninative-tarball 
        #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
-       BITBAKE_ZERO: core-image-minimal
+       BITBAKE_ZERO: 'core-image-sato-sdk -c populate_sdk'
        BITBAKE_ZERO_ALLOW_ERROR: no
-       #BITBAKE_ONE: empty
-       BITBAKE_ONE: core-image-sato-sdk
+       BITBAKE_ONE: empty
+       #BITBAKE_ONE: core-image-sato-sdk
        BITBAKE_ONE_ALLOW_ERROR: no
-       #BITBAKE_TWO: empty
-       BITBAKE_TWO: 'core-image-sato-sdk -c populate_sdk'
+       BITBAKE_TWO: empty
+       #BITBAKE_TWO: 'core-image-sato-sdk -c populate_sdk'
        BITBAKE_TWO_ALLOW_ERROR: no
-       BITBAKE_THREE: 'core-image-sato-sdk -c populate_sdk_ext'
+       BITBAKE_THREE: empty
+       #BITBAKE_THREE: 'core-image-sato-sdk -c populate_sdk_ext'
        BITBAKE_THREE_ALLOW_ERROR: no
-       BITBAKE_FOUR: buildtools-extended-tarball
+       BITBAKE_FOUR: empty
+       #BITBAKE_FOUR: buildtools-extended-tarball
        BITBAKE_FOUR_ALLOW_ERROR: no
-       NOTE: use-uninative-use-source-mirror-use-sstate-mirror
+       NOTE: use-uninative-use-source-mirror-use-sstate-mirror-2
     #name: Yocto build - core-image-minimal-local-source-mirror
     steps:
       - name: Get build system info
@@ -925,7 +927,7 @@ jobs:
             fi
             ls -lah
             popd
-      - name: Finished 04-use-uninative-use-source-mirror-use-sstate-mirror.yml
-        id: finished_04
+      - name: Finished 04.02-use-uninative-use-source-mirror-use-sstate-mirror-2.yml
+        id: finished_04.02
         run: |
-          echo "Finished 04-use-uninative-use-source-mirror-use-sstate-mirror.yml"
+          echo "Finished 04.02-use-uninative-use-source-mirror-use-sstate-mirror-2.yml"
