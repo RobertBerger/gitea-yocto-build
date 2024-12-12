@@ -79,12 +79,14 @@ jobs:
        #BITBAKE_ONE: empty
        BITBAKE_ONE: core-image-sato-sdk
        BITBAKE_ONE_ALLOW_ERROR: no
-       #BITBAKE_TWO: empty
-       BITBAKE_TWO: 'core-image-sato-sdk -c populate_sdk'
+       BITBAKE_TWO: empty
+       #BITBAKE_TWO: 'core-image-sato-sdk -c populate_sdk'
        BITBAKE_TWO_ALLOW_ERROR: no
-       BITBAKE_THREE: 'core-image-sato-sdk -c populate_sdk_ext'
+       BITBAKE_THREE: empty
+       #BITBAKE_THREE: 'core-image-sato-sdk -c populate_sdk_ext'
        BITBAKE_THREE_ALLOW_ERROR: no
-       BITBAKE_FOUR: buildtools-extended-tarball
+       BITBAKE_FOUR: empty
+       #BITBAKE_FOUR: buildtools-extended-tarball
        BITBAKE_FOUR_ALLOW_ERROR: no
        NOTE: use-uninative-use-source-mirror-use-sstate-mirror-1
     #name: Yocto build - core-image-minimal-local-source-mirror
