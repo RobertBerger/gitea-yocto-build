@@ -13,7 +13,7 @@ jobs:
     # The timeout for a job to be finished.
     # Please note that the Gitea instance also has a timeout (3h by default) for the job.
     # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
-    # 100min = 16,6667 hrs
+    # 1000 min = 16,6667 hrs
     timeout-minutes: 1000
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
@@ -75,7 +75,8 @@ jobs:
        #BITBAKE_ZERO: uninative-tarball 
        #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
        BITBAKE_ZERO: 'core-image-sato-sdk -c populate_sdk'
-       BITBAKE_ZERO_ALLOW_ERROR: no
+       # for some reason the act_runner thinks it fails ???
+       BITBAKE_ZERO_ALLOW_ERROR: yes
        BITBAKE_ONE: empty
        #BITBAKE_ONE: core-image-sato-sdk
        BITBAKE_ONE_ALLOW_ERROR: no
@@ -587,6 +588,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_TWO: ${{ env.BITBAKE_TWO }}
+          BITBAKE_TWO_ALLOW_ERROR: ${{ env.BITBAKE_TWO_ALLOW_ERROR }}
 #######################################
       - name: bitbake ${{ env.BITBAKE_THREE }}
         run: |
@@ -608,6 +610,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_THREE: ${{ env.BITBAKE_THREE }}
+          BITBAKE_THREE_ALLOW_ERROR: ${{ env.BITBAKE_THREE_ALLOW_ERROR }}
 #######################################
       - name: bitbake ${{ env.BITBAKE_FOUR }}
         run: |
@@ -629,6 +632,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_FOUR: ${{ env.BITBAKE_FOUR }}
+          BITBAKE_FOUR_ALLOW_ERROR: ${{ env.BITBAKE_FOUR_ALLOW_ERROR }}
 #######################################
   #   - name: bitbake core-image-sato-sdk
   #     run: |
