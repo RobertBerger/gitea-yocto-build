@@ -106,6 +106,6 @@ jobs:
   #   #
     needs: release
 #    needs: call-use-uninative-core-image-sato-sdk-local-source-mirror
-    uses: ./.gitea/workflows/04.01-call-use-uninative-use-source-mirror-use-sstate-mirror.yml
+    uses: ./.gitea/workflows/04.01-call-use-uninative-use-source-mirror-use-sstate-mirror-1.yml
     secrets: inherit
   # # <--
