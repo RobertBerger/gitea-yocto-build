@@ -183,6 +183,7 @@ jobs:
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
+          command_timeout: 60m
           script: |
             # execute the magic script
             pushd ${{env.ARTIFACTS_ON_SERVER}}
