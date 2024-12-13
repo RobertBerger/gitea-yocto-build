@@ -196,6 +196,7 @@ jobs:
           username: ${{ secrets.SCP_USERNAME }}
           password: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
+          command_timeout: 60m
           script: |
             if [ -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
               rm -rf /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
