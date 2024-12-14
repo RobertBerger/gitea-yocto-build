@@ -1,32 +1,38 @@
 #!/bin/bash
 # to be executed on host in /appdata/artifacts/
 
-ls -lah *-DL_DIR.tar.gz
+SOURCE_TARBALLS="*-DL_DIR.tar.gz"
+TARGET_TARBALL="all-DL_DIR.tar.gz"
 
-if [ -d dl-temp ]; then
-   rm -rf dl-temp
+SOURCE_TEMP_DIR="dl-temp"
+TARGET_TEMP_DIR="dl-temp-all"
+
+ls -lah ${SOURCE_TARBALLS}
+
+if [ -d ${SOURCE_TEMP_DIR} ]; then
+   rm -rf ${SOURCE_TEMP_DIR}
 fi
 
-mkdir dl-temp
+mkdir ${SOURCE_TEMP_DIR}
 
-if [ -d dl-temp-all ]; then
-   rm -rf dl-temp-all
+if [ -d ${TARGET_TEMP_DIR} ]; then
+   rm -rf ${TARGET_TEMP_DIR}
 fi
 
-mkdir dl-temp-all
+mkdir ${TARGET_TEMP_DIR}
 
-if [ -f all-DL_DIR.tar.gz ]; then
-   rm -f all-DL_DIR.tar.gz
+if [ -f ${TARGET_TARBALL} ]; then
+   rm -f ${TARGET_TARBALL}
 fi
 
-for i in *-DL_DIR.tar.gz;
+for i in ${SOURCE_TARBALLS};
 do 
-   echo "+ tar -I pigz -xf $i -C dl-temp/"
-   time tar -I pigz -xf "$i" -C "dl-temp/" ;    # Use -C to switch directory before extract and put extension to search for in tar file in quotes.
-   echo "+ du -hs dl-temp"
-   du -hs dl-temp   
-   echo "+ pushd dl-temp"
-   pushd dl-temp
+   echo "+ tar -I pigz -xf $i -C ${SOURCE_TEMP_DIR}/"
+   time tar -I pigz -xf "$i" -C "${SOURCE_TEMP_DIR}/" ;    # Use -C to switch directory before extract and put extension to search for in tar file in quotes.
+   echo "+ du -hs ${SOURCE_TEMP_DIR}"
+   du -hs ${SOURCE_TEMP_DIR}  
+   echo "+ pushd ${SOURCE_TEMP_DIR}"
+   pushd ${SOURCE_TEMP_DIR}
    # --> sanitize 
    echo "+ sanitize"
    find . -name "*bad-checksum*" -exec rm -f {} \;
@@ -38,36 +44,38 @@ do
    find . -maxdepth 1 -size 0 -delete
    rm -rf ./uninative/954182f691bb2dbae157ee991654ad2fd4cb51c7f3d3ab429e9f84654c8dc990
    # <-- sanitize
-   echo "+ rsync -avp * ../dl-temp-all/"
-   rsync -avp * ../dl-temp-all/
-   echo " --> symlinks in dl-temp"
+   echo "+ rsync -ap * ../${TARGET_TEMP_DIR}/"
+   rsync -ap * ../${TARGET_TEMP_DIR}/
+   echo " --> symlinks in ${SOURCE_TEMP_DIR}"
    find . -type l -ls
-   echo " <-- symlinks in dl-temp"
-   echo " --> dirs in dl-temp"
+   echo " <-- symlinks in ${SOURCE_TEMP_DIR}"
+   echo " --> dirs in ${SOURCE_TEMP_DIR}"
    find . -type d -ls
-   echo " <-- dirs in dl-temp"
+   echo " <-- dirs in ${SOURCE_TEMP_DIR}"
    echo "+ popd"
    popd
-   echo "+ rm -rf dl-temp"
-   rm -rf dl-temp
-   echo "+ mkdir dl-temp"
-   mkdir dl-temp
-   du -hs dl-temp-all
-   echo " --> symlinks in ../dl-temp-all/"
-   find dl-temp-all/ -type l -ls
-   echo " <-- symlinks in ../dl-temp-all/"
-   echo " --> dirs in ../dl-temp-all/"
-   find dl-temp-all/ -type d -ls
-   echo " <-- dirs in ../dl-temp-all/"
+   echo "+ rm -rf ${SOURCE_TEMP_DIR}"
+   rm -rf ${SOURCE_TEMP_DIR}
+   echo "+ mkdir ${SOURCE_TEMP_DIR}"
+   mkdir ${SOURCE_TEMP_DIR}
+   du -hs ${TARGET_TEMP_DIR}
+   echo " --> symlinks in ../${TARGET_TEMP_DIR}/"
+   find ${TARGET_TEMP_DIR}/ -type l -ls
+   echo " <-- symlinks in ../${TARGET_TEMP_DIR}/"
+   echo " --> dirs in ../${TARGET_TEMP_DIR}/"
+   find ${TARGET_TEMP_DIR}/ -type d -ls
+   echo " <-- dirs in ../${TARGET_TEMP_DIR}/"
 done
 
-echo "+ pushd dl-temp-all"
-pushd dl-temp-all
+echo "+ pushd ${TARGET_TEMP_DIR}"
+pushd ${TARGET_TEMP_DIR}
+# --> sanitize
 echo "+ magic symlink"
 for i in gitshallow_*linux-stable.git*_linux*.tar.gz; do j=`echo $i | sed 's/192.168.42.182.8939.robert.berger/git.kernel.org.pub.scm.linux.kernel.git.stable/g'`; ln -sf "$i" "$j"; done
-echo "+ tar -I pigz -cf ../all-DL_DIR.tar.gz ."
-time tar -I pigz -cf ../all-DL_DIR.tar.gz .
+# <-- sanitize
+echo "+ tar -I pigz -cf ../${TARGET_TARBALL} ."
+time tar -I pigz -cf ../${TARGET_TARBALL} .
 echo "+ popd"
 popd
-echo "+ ls -lah all-DL_DIR.tar.gz"
-ls -lah all-DL_DIR.tar.gz
+echo "+ ls -lah ${TARGET_TARBALL}"
+ls -lah ${TARGET_TARBALL}
