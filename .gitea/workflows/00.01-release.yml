@@ -60,22 +60,22 @@ jobs:
     uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
     secrets: inherit
   # <--
-#   # -->
-#   call-use-uninative-core-image-minimal-local-source-mirror:
-#     # make sure we can build core-image-minimal only from local source mirror
-# #    needs: release
-#     needs: call-uninative-from-local-source-mirror
-#     uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
-#     secrets: inherit
-#   # <--
-#   # -->
-#   call-use-uninative-core-image-sato-sdk-local-source-mirror:
-#    # make sure we can build core-image-sato-sdk only from local source mirror
-#    # needs: release
-#     needs: call-use-uninative-core-image-minimal-local-source-mirror
-#     uses: ./.gitea/workflows/03.02-use-uninative-core-image-sato-sdk-local-source-mirror.yml
-#     secrets: inherit
-#   # <--
+  # -->
+  call-use-uninative-core-image-minimal-local-source-mirror:
+    # make sure we can build core-image-minimal only from local source mirror
+#    needs: release
+    needs: call-uninative-from-local-source-mirror
+    uses: ./.gitea/workflows/03.01-use-uninative-core-image-minimal-local-source-mirror.yml
+    secrets: inherit
+  # <--
+  # -->
+  call-use-uninative-core-image-sato-sdk-local-source-mirror:
+   # make sure we can build core-image-sato-sdk only from local source mirror
+   # needs: release
+    needs: call-use-uninative-core-image-minimal-local-source-mirror
+    uses: ./.gitea/workflows/03.02-use-uninative-core-image-sato-sdk-local-source-mirror.yml
+    secrets: inherit
+  # <--
 #   # -->
 #   # POPULATE SSTATE mirror from all previous sstates
 #   call-populate-all-sstate-mirror:
