@@ -1,0 +1,244 @@
+name: release-use-uninative-core-image-sato-sdk-populate-sstate-mirror
+
+#on: [push]
+
+on:
+  workflow_call:
+
+jobs:
+  release-populate-all-sstate-mirror-job:
+    # runs-on: yocto-build-latest
+    # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
+    runs-on: yocto-build-walnascar
+    # The timeout for a job to be finished.
+    # Please note that the Gitea instance also has a timeout (3h by default) for the job.
+    # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
+    # 100min = 16,6667 hrs
+    # timeout-minutes: 1000
+    # Specify location to build, this path persists across builds allowing
+    # us to build incrementally
+    env:
+       WORK_DIR: ${{github.workspace}}/workdir
+       GITEA_GIT_MIRROR: 192.168.42.182:8939
+       GITEA_SERVER: 192.168.42.182:8940
+       WORKFLOW_DIR: gitea-yocto-build
+       WORKFLOW_REPO: rber/${{env.WORKFLOW_DIR}}
+       MANIFEST_REPO: rber/manifests -b master-action-walnascar
+       YP_CONFIG: multi-v7-ml-debug-training-master
+       META_RESY: meta-resy-master
+       TEMPLATE_COMMON: template-common-master
+       YP_VERSION: walnascar
+       #ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
+       ARTIFACTS_ON_SERVER: /appdata/artifacts
+       NO_SSTATE_MIRRORS: yes
+       POPULATE_SSTATE_MIRROR: no
+       # used for local source mirror:
+       USE_VAR_WWW: no
+       PREP_SOURCE_MIRROR: yes
+       # --> only one yes, the other no
+       NO_SOURCE_MIRROR: no
+       USE_SOURCE_MIRROR: yes
+       USE_SOURCE_MIRROR_LOCAL: no
+       # <-- only one yes, the other no
+       USE_BB_NO_NETWORK: no
+       USE_BB_ALLOWED_NETWORKS: no
+       THE_ALLOWED_NETWORKS: 192.168.42.182
+       # --> only one yes, the other no
+       NO_PREMIRRORS: no
+       USE_PREMIRRORS: yes
+       # <-- only one yes, the other no 
+       # --> only one yes, the other no
+       BUILD_UNINATIVE_TARBALL: no
+       USE_UNINATIVE_TARBALL: yes
+       USE_UNINATIVE_TARBALL_LOCAL: no
+       DONT_USE_UNINATIVE_TARBALL: no
+       POPULATE_UNINATIVE_TARBALL: no
+       UNINATIVE_TARBALL_VERSION: 4.6
+       # <-- only one yes, the other no
+       THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+       THE_UNINATIVE_LOCAL_URL: file:///${{env.WORK_DIR}}/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+       THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
+       USE_PR_SERVER: yes
+       PR_SERVER: 192.168.42.182:18586
+       USE_HASH_SERVER: yes
+       HASH_SERVER: 192.168.42.182:8688
+       # lighttpd:
+       WEB_SERVER: 192.168.42.182:8941
+       # nginx:
+       #WEB_SERVER: 10.0.0.182:8053
+       #BITBAKE_ZERO: uninative-tarball 
+       #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
+       BITBAKE_ZERO: empty
+       BITBAKE_ZERO_ALLOW_ERROR: no
+       BITBAKE_ONE: core-image-minimal
+       #BITBAKE_ONE: 'core-image-minimal --runall=fetch'
+       #BITBAKE_ONE: empty
+       BITBAKE_ONE_ALLOW_ERROR: no
+       #BITBAKE_TWO: empty
+       BITBAKE_TWO: core-image-sato-sdk
+       BITBAKE_TWO_ALLOW_ERROR: no
+       NOTE: populate-all-sstate-mirror
+    #name: Yocto build - core-image-minimal-local-source-mirror
+    steps:
+      - name: Get build system info
+        id: build_system
+        run: |
+          echo "Host: ${HOSTNAME}"
+          echo "CPUs/Threads: $(grep -c ^processor /proc/cpuinfo)"
+          echo "CPUs: $(grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}')"
+          echo "$(free -mh)"
+          echo "$(id)"
+      - name: Get current date/time
+        id: date
+        run: |
+          echo "::set-output name=date::$(date +'%Y%m%d%H%M%S')"
+      - name: Get gitea git mirror
+        id: gitea_git_mirror
+        run: |
+          echo "::set-output name=gitea_git_mirror::${{env.GITEA_GIT_MIRROR}}"
+      - name: Get gitea server
+        id: gitea_server
+        run: |
+          echo "::set-output name=gitea_server::${{env.GITEA_SERVER}}"
+      - name: Get workflow repo
+        id: workflow_repo
+        run: |
+          echo "::set-output name=workflow_repo::${{env.WORKFLOW_REPO}}"
+      - name: Get manifest repo
+        id: manifest_repo
+        run: |
+          echo "::set-output name=manifest_repo::${{env.MANIFEST_REPO}}"
+      - name: Get META_RESY
+        id: meta_resy
+        run: |
+          echo "::set-output name=meta_resy::${{env.META_RESY}}"
+      - name: Get TEMPLATE_COMMON
+        id: template_comomon
+        run: |
+          echo "::set-output name=template_common::${{env.TEMPLATE_COMMON}}"
+      - name: Get Yocto Project config
+        id: yp_config
+        run: |
+          echo "::set-output name=yp_config::${{env.YP_CONFIG}}"
+      - name: get Yocto Project version
+        id: yp_version
+        run: |
+          echo "::set-output name=yp_version::${{env.YP_VERSION}}"
+      - name: get PR server
+        id: pr_server
+        run: |
+          echo "::set-output name=pr_server::${{env.PR_SERVER}}"
+      - name: get hash server
+        id: hash_server
+        run: |
+          echo "::set-output name=hash_server::${{env.HASH_SERVER}}"
+      - name: get web server
+        id: web_server
+        run: |
+          echo "::set-output name=web_server::${{env.WEB_SERVER}}"
+      - name: get THE_UNINATIVE_URL
+        id: uninative_url
+        run: |
+          echo "::set-output name=uninative_url::${{env.THE_UNINATIVE_URL}}"
+      - name: get Note
+        id: note
+        run: |
+          echo "::set-output name=note::${{env.NOTE}}"
+      - name: Get bitbake_zero
+        id: bitbake_zero
+        run: |
+          echo "::set-output name=bitbake_zero::${{env.BITBAKE_ZERO}}"
+      - name: Get bitbake_one
+        id: bitbake_one
+        run: |
+          echo "::set-output name=bitbake_one::${{env.BITBAKE_ONE}}"
+      - name: Get bitbake_two
+        id: bitbake_two
+        run: |
+          echo "::set-output name=bitbake_two::${{env.BITBAKE_TWO}}"
+      - name: Get the_allowed_networks
+        id: the_allowed_networks
+        run: |
+          echo "::set-output name=the_allowed_networks::${{env.THE_ALLOWED_NETWORKS}}"
+      - name: Checkout workflow repo
+        run: |
+          mkdir -p ${{env.WORK_DIR}}/sources
+          pushd ${{env.WORK_DIR}}/sources
+          git clone http://${{ steps.gitea_server.outputs.gitea_server }}/${{ steps.workflow_repo.outputs.workflow_repo }}
+          ls
+          popd
+      - name: scp add-all-sources.sh to /appdata/artifacts
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+           host: ${{ secrets.SCP_HOST }}
+           user: ${{ secrets.SCP_USERNAME }}
+           pass: ${{ secrets.SCP_PASSWORD }}
+           port: ${{ secrets.SCP_PORT }}
+           src: "${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/sources/add-all-sources.sh"
+           dist: /appdata/artifacts      
+      - name: combine all *-DL_DIR.tar.gz on server (/appdata/artifacts)
+        uses: https://github.com/appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          command_timeout: 60m
+          script: |
+            # execute the magic script
+            pushd ${{env.ARTIFACTS_ON_SERVER}}
+            ./add-all-sources.sh
+            popd
+      - name: Populate source_mirror on server
+        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
+        uses: https://github.com/appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          username: ${{ secrets.SCP_USERNAME }}
+          password: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          command_timeout: 60m
+          script: |
+            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori ]; then
+              rm -rf /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+            fi
+            if [ -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} ]; then
+              mv /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }} /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}.ori
+            fi
+            mkdir -p /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/all-DL_DIR.tar.gz -C /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+            echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-all-DL_DIR.tar.gz" > build-version.txt
+            ls -lah
+            popd
+            # !!!!! create source_mirror_compressed !!!!!
+            if [ ! -d /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
+               mkdir -p /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
+            fi
+            cp ${{env.ARTIFACTS_ON_SERVER}}/all-DL_DIR.tar.gz ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 1
+            fi
+            cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            if [ $? -ne 0 ]; then
+               exit 2
+            fi
+            pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            # symlink does not seem to work????
+            # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            if [ -f DL_DIR.tar.gz ]; then
+               rm -f DL_DIR.tar.gz
+            fi
+            cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 3
+            fi
+            ls -lah
+            popd
+            # remove all-SSTATE_DIR.tar.gz
+            rm -f ${{env.ARTIFACTS_ON_SERVER}}/all-DL_DIR.tar.gz
+      - name: Finished 05.00-populate-all-source.yml
+        id: finished_04.00
+        run: |
+          echo "Finished 04.00-populate-all-sstate.yml"
