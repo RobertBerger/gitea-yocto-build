@@ -131,7 +131,7 @@ jobs:
   # POPULATE SSTATE mirror from all previous sstates
   call-populate-all-sstate-mirror-1:
   #  needs: release
-    needs: call-use-uninative-core-image-sato-sdk-local-source-mirror-2
+    needs: call-use-uninative-use-source-mirror-use-sstate-mirror-2
     uses: ./.gitea/workflows/04.00-populate-all-sstate.mirror.yml
     secrets: inherit
   # <--
