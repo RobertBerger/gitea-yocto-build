@@ -36,7 +36,7 @@ jobs:
        # used for local source mirror:
        USE_VAR_WWW_SOURCES: no
        USE_VAR_WWW_SSTATE: no
-       PREP_SOURCE_MIRROR: no
+       PREP_SOURCE_MIRROR: yes
        # --> only one yes, the other no
        NO_SOURCE_MIRROR: yes
        USE_SOURCE_MIRROR: no
