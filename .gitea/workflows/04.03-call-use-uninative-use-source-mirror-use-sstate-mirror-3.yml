@@ -75,7 +75,7 @@ jobs:
        #BITBAKE_ZERO: uninative-tarball 
        #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
        BITBAKE_ZERO: 'core-image-sato-sdk -c populate_sdk_ext'
-       BITBAKE_ZERO_ALLOW_ERROR: yes
+       BITBAKE_ZERO_ALLOW_ERROR: no
        #BITBAKE_ONE: empty
        BITBAKE_ONE: buildtools-extended-tarball
        BITBAKE_ONE_ALLOW_ERROR: no
@@ -532,10 +532,10 @@ jobs:
              cd ${{env.WORK_DIR}}
              if [ "$BITBAKE_ZERO_ALLOW_ERROR" == "yes" ]; then
                 # allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }} || echo "retval: $?" || true
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }} || true
              else
                 # don't allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }} || echo "retval: $?"
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }}
              fi
           fi
         env:
