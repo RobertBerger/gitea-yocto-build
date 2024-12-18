@@ -663,6 +663,32 @@ jobs:
           BITBAKE_FOUR: ${{ env.BITBAKE_FOUR }}
           BITBAKE_FOUR_ALLOW_ERROR: ${{ env.BITBAKE_FOUR_ALLOW_ERROR }}
 #######################################  
+      - name: Prepare source-mirror
+        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
+        run: |
+          if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
+          # downloads -> source_mirror
+          if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then
+             cp -R ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          else
+             echo "no ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }}"
+          fi
+          # take care also about _master
+          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then
+             cp -R ${{env.WORK_DIR}}/downloads_master ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          else
+             echo "no ${{env.WORK_DIR}}/downloads_master"
+          fi
+          # cleanup source_mirror
+          pushd ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          ${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/cleanup/cleanup.sh
+          popd
+          # make tarball from source_mirror 
+          pushd ${{env.WORK_DIR}}/artifacts
+          tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }} .
+          # remove source_mirror dir
+          rm -rf ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
+          popd
 #######################################
       - name: Compress Artifacts after build
         run: |
@@ -704,32 +730,6 @@ jobs:
           ls -lah ${{env.WORK_DIR}}/artifacts
           popd
 #######################################
-      - name: Prepare source-mirror
-        if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
-        run: |
-          if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
-          # downloads -> source_mirror
-          if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then
-             cp -R ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-          else
-             echo "no ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }}"
-          fi
-          # take care also about _master
-          if [ -d ${{env.WORK_DIR}}/downloads_master ]; then
-             cp -R ${{env.WORK_DIR}}/downloads_master ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-          else
-             echo "no ${{env.WORK_DIR}}/downloads_master"
-          fi
-          # cleanup source_mirror
-          pushd ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-          ${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/cleanup/cleanup.sh
-          popd
-          # make tarball from source_mirror 
-          pushd ${{env.WORK_DIR}}/artifacts
-          tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz -C ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }} .
-          # remove source_mirror dir
-          rm -rf ${{env.WORK_DIR}}/artifacts/source_mirror_${{ steps.yp_version.outputs.yp_version }}
-          popd
 ####################### --> not supported yet ???
       # - name: Upload Artifact
       #   uses: actions/upload-artifact@v3
