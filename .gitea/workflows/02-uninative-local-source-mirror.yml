@@ -36,7 +36,7 @@ jobs:
        NO_IMAGE_BUILDINFO: yes
        NON_DEFAULT_XZ_PARAMS: no
        # used for local source mirror:
-       USE_VAR_WWW_SOURCES: no
+       USE_VAR_WWW_SOURCES: yes
        USE_VAR_WWW_SSTATE: no
        PREP_SOURCE_MIRROR: no
        # --> only one yes, the other no
