@@ -217,10 +217,12 @@ jobs:
             fi
             cp ${{env.ARTIFACTS_ON_SERVER}}/all-DL_DIR.tar.gz ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz
             if [ $? -ne 0 ]; then
+               echo "exit 1"
                exit 1
             fi
             cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
             if [ $? -ne 0 ]; then
+               echo "exit 2"
                exit 2
             fi
             pushd /appdata/lighttpd/var/www/source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
@@ -232,6 +234,7 @@ jobs:
             fi
             cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror.tar.gz DL_DIR.tar.gz
             if [ $? -ne 0 ]; then
+               echo "exit 3"
                exit 3
             fi
             ls -lah
