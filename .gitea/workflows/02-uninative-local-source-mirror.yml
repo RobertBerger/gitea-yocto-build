@@ -28,6 +28,7 @@ jobs:
        YP_VERSION: walnascar
        #ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
        ARTIFACTS_ON_SERVER: /appdata/artifacts
+       # --> only one yes
        NO_SSTATE_MIRRORS: yes
        USE_SSTATE_MIRRORS: no
        USE_SSTATE_MIRRORS_LOCAL: no
