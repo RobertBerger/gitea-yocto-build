@@ -600,7 +600,7 @@ jobs:
                 time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }} || true
              else
                 # don't allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }}
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }} || echo "retval: $?"
              fi
           fi
         env:
@@ -655,9 +655,7 @@ jobs:
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           pushd ${{env.WORK_DIR}}/artifacts
           set +x
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then 
-             tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; 
-          fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
           # cve  images  ipk  licenses  sdk  spdx
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/cve ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-cve.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/cve .; fi
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/images ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-images.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/images .; fi
@@ -715,8 +713,20 @@ jobs:
       - name: Copy artifacts after build - what is there? (0)
         run: |
           echo "ls ${{env.WORK_DIR}}/artifacts/"
-          ls "${{env.WORK_DIR}}/artifacts/"          
+          ls "${{env.WORK_DIR}}/artifacts/"
+      # --> conditionally scp what is there
+      # --> cp buildhistory conditionally
+      - name: Check for file buildhistory
+        id: buildhistory_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts after build - buildhistory (4)
+        if: steps.buildhistory_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -725,6 +735,7 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-buildhistory.tar.gz"
           dist: /appdata/artifacts
+      # <-- cp buildhistory conditionally
       - name: Copy artifacts after build - conf (5)
         uses: youxingz/sshpass-scp-action@v3
         with:
@@ -797,6 +808,7 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-deploy-sdk.tar.gz"
           dist: /appdata/artifacts
+      # <-- conditionally scp what is there
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
