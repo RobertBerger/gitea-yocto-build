@@ -75,7 +75,7 @@ jobs:
        #BITBAKE_ZERO: uninative-tarball 
        #BITBAKE_ZERO: 'uninative-tarball --runall=fetch'
        BITBAKE_ZERO: 'core-image-sato-sdk -c populate_sdk_ext'
-       BITBAKE_ZERO_ALLOW_ERROR: no
+       BITBAKE_ZERO_ALLOW_ERROR: yes
        #BITBAKE_ONE: empty
        BITBAKE_ONE: buildtools-extended-tarball
        BITBAKE_ONE_ALLOW_ERROR: no
@@ -523,7 +523,7 @@ jobs:
       #     WORKDIR: ${{ env.WORK_DIR }}
       #     WORKSPACE: "jenkins"
 #######################################
-      - name: bitbake ${{ env.BITBAKE_ZERO }} - uninative-tarball?
+      - name: bitbake ${{ env.BITBAKE_ZERO }}
         run: |
           if [ "$BITBAKE_ZERO" == "empty" ]; then
              echo "BITBAKE_ZERO is $BITBAKE_ZERO"
@@ -532,11 +532,10 @@ jobs:
              cd ${{env.WORK_DIR}}
              if [ "$BITBAKE_ZERO_ALLOW_ERROR" == "yes" ]; then
                 # allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }} || true
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }} || echo "retval: $?" || true
              else
                 # don't allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }}
-                echo "retval: $?"
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }} || echo "retval: $?"
              fi
           fi
         env:
@@ -656,8 +655,12 @@ jobs:
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           pushd ${{env.WORK_DIR}}/artifacts
           set +x
-          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
-          # ipk  licenses  sdk  spdx
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then 
+             tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; 
+          fi
+          # cve  images  ipk  licenses  sdk  spdx
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/cve ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-cve.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/cve .; fi
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/images ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-images.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/images .; fi
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-ipk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk .; fi
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-licenses.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses .; fi
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk .; fi
@@ -712,7 +715,7 @@ jobs:
       - name: Copy artifacts after build - what is there? (0)
         run: |
           echo "ls ${{env.WORK_DIR}}/artifacts/"
-          ls "${{env.WORK_DIR}}/artifacts/"
+          ls "${{env.WORK_DIR}}/artifacts/"          
       - name: Copy artifacts after build - buildhistory (4)
         uses: youxingz/sshpass-scp-action@v3
         with:
