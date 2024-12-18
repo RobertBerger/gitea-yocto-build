@@ -6,7 +6,7 @@ on:
   workflow_call:
 
 jobs:
-  release-populate-all-sstate-mirror-job:
+  release-populate-all-source-mirror-job:
     # runs-on: yocto-build-latest
     # runs-on: 2023-05-24-master-local-icecc-ub20-doc-action
     runs-on: yocto-build-walnascar
@@ -77,7 +77,7 @@ jobs:
        #BITBAKE_TWO: empty
        BITBAKE_TWO: core-image-sato-sdk
        BITBAKE_TWO_ALLOW_ERROR: no
-       NOTE: populate-all-sstate-mirror
+       NOTE: populate-all-source-mirror
     #name: Yocto build - core-image-minimal-local-source-mirror
     steps:
       - name: Get build system info
@@ -236,9 +236,9 @@ jobs:
             fi
             ls -lah
             popd
-            # remove all-SSTATE_DIR.tar.gz
+            # remove all-DL_DIR.tar.gz
             rm -f ${{env.ARTIFACTS_ON_SERVER}}/all-DL_DIR.tar.gz
       - name: Finished 05.00-populate-all-source.yml
-        id: finished_04.00
+        id: finished_05.00
         run: |
-          echo "Finished 04.00-populate-all-sstate.yml"
+          echo "Finished 05.00-populate-all-source.yml"
