@@ -13,8 +13,6 @@ jobs:
     # The timeout for a job to be finished.
     # Please note that the Gitea instance also has a timeout (3h by default) for the job.
     # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
-    # 100min = 16,6667 hrs
-    # timeout-minutes: 1000
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
     env:
@@ -454,6 +452,16 @@ jobs:
       #     # export WORKDIR to resy-cooker.sh script:
       #     WORKDIR: ${{ env.WORK_DIR }}
       #     WORKSPACE: "jenkins"
+      - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed - uninative local
+        if: ${{ env.USE_UNINATIVE_TARBALL_LOCAL == 'yes' }}
+        run: |
+          # --> uninative local
+          mkdir -p ${{env.WORK_DIR}}/uninative
+          pushd ${{env.WORK_DIR}}/uninative
+          time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
+          tree ${{env.WORK_DIR}}/uninative
+          popd
+          # <-- uninative local      
       - name: Compress Artifacts before build
         run: |
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
@@ -612,6 +620,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_TWO: ${{ env.BITBAKE_TWO }}
+          BITBAKE_TWO_ALLOW_ERROR: ${{ env.BITBAKE_TWO_ALLOW_ERROR }}
 #######################################
       - name: bitbake ${{ env.BITBAKE_THREE }}
         run: |
@@ -625,7 +634,7 @@ jobs:
                 time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }} || true
              else
                 # don't allow error:
-                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }} || echo "retval: $?"
+                time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_three.outputs.bitbake_three }}
              fi
           fi
         env:
@@ -633,6 +642,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_THREE: ${{ env.BITBAKE_THREE }}
+          BITBAKE_THREE_ALLOW_ERROR: ${{ env.BITBAKE_THREE_ALLOW_ERROR }}
 #######################################
       - name: bitbake ${{ env.BITBAKE_FOUR }}
         run: |
@@ -1043,13 +1053,13 @@ jobs:
                  rm -rf deploy-temp
               fi
               mkdir deploy-temp
-              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
+              tar -xzf ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.ARTIFACTS_ON_SERVER}}/deploy-temp
               pushd deploy-temp
                 mkdir -p /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}
-                cp sdk/* /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
+                cp * /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                 pushd /appdata/lighttpd/var/www/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
                   ln -sf x86_64-nativesdk-libc.tar.xz x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz
-                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy.tar.gz" > build-version.txt
+                  echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz" > build-version.txt
                   sha256sum=($(sha256sum x86_64-nativesdk-libc-${{env.UNINATIVE_TARBALL_VERSION}}.tar.xz)) && echo ${sha256sum} > sha256sum.txt
                   cat sha256sum.txt
                   ls -lah

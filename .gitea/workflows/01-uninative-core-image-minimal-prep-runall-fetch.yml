@@ -13,8 +13,6 @@ jobs:
     # The timeout for a job to be finished.
     # Please note that the Gitea instance also has a timeout (3h by default) for the job.
     # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
-    # 100min = 16,6667 hrs
-    # timeout-minutes: 1000
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
     env:
@@ -31,10 +29,14 @@ jobs:
        #ARTIFACTS_ON_SERVER: /appdata/artifacts/workspace/rber/${{env.WORKFLOW_DIR}}/workdir/artifacts
        ARTIFACTS_ON_SERVER: /appdata/artifacts
        NO_SSTATE_MIRRORS: yes
+       USE_SSTATE_MIRRORS: no
+       USE_SSTATE_MIRRORS_LOCAL: no
+       # to populate the sstate mirror:
        POPULATE_SSTATE_MIRROR: no
        # used for local source mirror:
-       USE_VAR_WWW: no
-       PREP_SOURCE_MIRROR: yes
+       USE_VAR_WWW_SOURCES: no
+       USE_VAR_WWW_SSTATE: no
+       PREP_SOURCE_MIRROR: no
        # --> only one yes, the other no
        NO_SOURCE_MIRROR: yes
        USE_SOURCE_MIRROR: no
@@ -58,6 +60,7 @@ jobs:
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_UNINATIVE_LOCAL_URL: file:///${{env.WORK_DIR}}/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
+       THE_SSTATE_MIRROR_URL: http://${{env.WEB_SERVER}}/sstate_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
        PR_SERVER: 192.168.42.182:18586
        USE_HASH_SERVER: yes
@@ -143,6 +146,14 @@ jobs:
         id: uninative_url
         run: |
           echo "::set-output name=uninative_url::${{env.THE_UNINATIVE_URL}}"
+      - name: get THE_SOURCE_MIRROR_URL
+        id: source_mirror_url
+        run: |
+          echo "::set-output name=source_mirror_url::${{env.THE_SOURCE_MIRROR_URL}}"
+      - name: get THE_SSTATE_MIRROR_URL
+        id: sstate_mirror_url
+        run: |
+          echo "::set-output name=sstate_mirror_url::${{env.THE_SSTATE_MIRROR_URL}}"
       - name: get Note
         id: note
         run: |
@@ -234,6 +245,8 @@ jobs:
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
           sed -i "s,mirror:8687,${{ steps.hash_server.outputs.hash_server }}," site.conf
+          sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
+          echo "BB_HASHSERVE_UPSTREAM=\"${{ env.HASH_SERVER }}\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - no SSTATE/MIRRORS,...
@@ -242,6 +255,24 @@ jobs:
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
           sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
           sed -i 's/^BB_HASHSERVE_UPSTREAM/#&/' site.conf
+          cat site.conf
+          popd
+      - name: Fix site.conf file - use SSTATE/MIRRORS http://,...
+        if: ${{ env.USE_SSTATE_MIRRORS == 'yes' }}
+        run: |
+          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+          sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
+          # SSTATE_MIRRORS = "file://.* http://***:8941/sstate_mirror_master/PATH;downloadfilename=PATH"
+          echo "SSTATE_MIRRORS=\"file://.* ${{ env.THE_SSTATE_MIRROR_URL }}/PATH;downloadfilename=PATH\"" >> site.conf
+          cat site.conf
+          popd
+      - name: Fix site.conf file - use SSTATE/MIRRORS file://,...
+        if: ${{ env.USE_SSTATE_MIRRORS_LOCAL == 'yes' }}
+        run: |
+          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+          sed -i 's/^SSTATE_MIRRORS/#&/' site.conf
+          # SSTATE_MIRRORS = "file://.* http://***:8941/sstate_mirror_master/PATH;downloadfilename=PATH"
+          echo "SSTATE_MIRRORS=\"file://.* ${{ env.THE_SSTATE_MIRROR_URL }}/PATH;downloadfilename=PATH\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - prep. build uninative-tarball
@@ -266,6 +297,30 @@ jobs:
           UNINATIVE_SHA256SUM=$(cat sha256sum.txt)
           echo "uninative_sha256sum: ${UNINATIVE_SHA256SUM}"
           echo "UNINATIVE_CHECKSUM[x86_64]=\"${UNINATIVE_SHA256SUM}\"" >> site.conf
+          # -----> this might be needed here (since it's not build from local sources)
+          # let's comment out the UNINATIVE_URL first
+          sed -i 's/^UNINATIVE_URL/#&/' site.conf
+          # let's set the UNINATIVE_URL
+          echo "UNINATIVE_URL=\"${{ env.THE_UNINATIVE_URL }}\"" >> site.conf
+          # <----- this might be needed here (since it's not build from local sources)
+          cat site.conf
+          popd
+      - name: Fix site.conf file - use uninative-tarball local
+        if: ${{ env.USE_UNINATIVE_TARBALL_LOCAL == 'yes' }}
+        run: |
+          pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
+          echo "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          time wget -t 2 -T 30 --passive-ftp "${{ steps.uninative_url.outputs.uninative_url }}/sha256sum.txt"
+          cat sha256sum.txt
+          UNINATIVE_SHA256SUM=$(cat sha256sum.txt)
+          echo "uninative_sha256sum: ${UNINATIVE_SHA256SUM}"
+          echo "UNINATIVE_CHECKSUM[x86_64]=\"${UNINATIVE_SHA256SUM}\"" >> site.conf
+          # -----> this might not be needed here (since it's build from local sources)
+          # let's comment out the UNINATIVE_URL first
+          sed -i 's/^UNINATIVE_URL/#&/' site.conf
+          # let's set the UNINATIVE_LOCAL_URL
+          echo "UNINATIVE_URL=\"${{ env.THE_UNINATIVE_LOCAL_URL }}\"" >> site.conf
+          # <----- this might not be needed here (since it's build from local sources)
           cat site.conf
           popd
       - name: Fix site.conf file - don't use uninative-tarball
@@ -330,8 +385,9 @@ jobs:
           #sed -i "s,own-mirrors,," site.conf
           echo "INHERIT += \"own-mirrors\"" >> site.conf
           # SOURCE_MIRROR_URL = "http://example.com/my-source-mirror"
+          # remove the source mirror
+          sed -i 's/^SOURCE_MIRROR_URL/#&/' site.conf
           echo "SOURCE_MIRROR_URL = \"http://${{env.THE_SOURCE_MIRROR_URL}}\"" >> site.conf
-          echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - use SOURCE_MIRROR_LOCAL
@@ -346,7 +402,6 @@ jobs:
           # 3 - Three slashes
           echo "INHERIT += \"own-mirrors\"" >> site.conf
           echo "SOURCE_MIRROR_URL = \"file://${{env.WORK_DIR}}/source_mirror/\"" >> site.conf
-          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
           cat site.conf
           popd
       - name: Fix site.conf file - BB_NO_NETWORK
@@ -360,13 +415,11 @@ jobs:
         if: ${{ env.USE_BB_ALLOWED_NETWORKS == 'yes' }}
         run: |
           pushd ${{env.WORK_DIR}}/sources/${{ env.META_RESY }}/${{ env.TEMPLATE_COMMON }}
-          #echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
-          echo "BB_ALLOWED_NETWORKS = ${{ env.THE_ALLOWED_NETWORKS }}" >> site.conf
-          #echo "SRCREV:pn-ascii-invaders = \"2644be38afc06f7f7bba55034966dd66d9ad524f\"" >> site.conf
+          echo "BB_ALLOWED_NETWORKS = \"${{ env.THE_ALLOWED_NETWORKS }}\"" >> site.conf
           cat site.conf
           popd
-      - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed
-        if: ${{ env.USE_VAR_WWW == 'yes' }}
+      - name: Fix site.conf file - VAR_WWW_SOURCES - BB_NO_NETWORK needed
+        if: ${{ env.USE_VAR_WWW_SOURCES == 'yes' }}
         run: |
           # --> source mirror local
           mkdir -p ${{env.WORK_DIR}}/source_mirror
@@ -396,6 +449,16 @@ jobs:
       #     # export WORKDIR to resy-cooker.sh script:
       #     WORKDIR: ${{ env.WORK_DIR }}
       #     WORKSPACE: "jenkins"
+      - name: Fix site.conf file - VAR_WWW - BB_NO_NETWORK needed - uninative local
+        if: ${{ env.USE_UNINATIVE_TARBALL_LOCAL == 'yes' }}
+        run: |
+          # --> uninative local
+          mkdir -p ${{env.WORK_DIR}}/uninative
+          pushd ${{env.WORK_DIR}}/uninative
+          time wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" ${{env.THE_UNINATIVE_URL}}
+          tree ${{env.WORK_DIR}}/uninative
+          popd
+          # <-- uninative local      
       - name: Compress Artifacts before build
         run: |
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
@@ -416,18 +479,18 @@ jobs:
         run: |
           echo "ls ${{env.WORK_DIR}}/artifacts/"
           ls "${{env.WORK_DIR}}/artifacts/"
-      # - name: Copy artifacts before build
-      #   uses: https://github.com/appleboy/scp-action@v0.1.7
-      #   with:
-      #     command_timeout: 60m
-      #     host: ${{ secrets.SCP_HOST }}
-      #     username: ${{ secrets.SCP_USERNAME }}
-      #     password: ${{ secrets.SCP_PASSWORD }}
-      #     port: ${{ secrets.SCP_PORT }}
-      #     source: "${{env.WORK_DIR}}/artifacts/*"
-      #     target: /appdata/artifacts
-      #     debug: true
+      # --> cp template-common conditionally
+      - name: Check for file template-common
+        id: template-common_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-${{ env.META_RESY }}-${{ env.TEMPLATE_COMMON }}.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts before build - template-common (1)
+        if: steps.template-common_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -436,16 +499,40 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-template-common*.tar.gz"
           dist: /appdata/artifacts
-      # - name: Copy artifacts before build - source_mirror_${{env.YP_VERSION}}_compressed (2)
-      #   uses: youxingz/sshpass-scp-action@v3
-      #   with:
-      #     host: ${{ secrets.SCP_HOST }}
-      #     user: ${{ secrets.SCP_USERNAME }}
-      #     pass: ${{ secrets.SCP_PASSWORD }}
-      #     port: ${{ secrets.SCP_PORT }}
-      #     src: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
-      #     dist: /appdata/artifacts
+      # <-- cp template-common conditionally
+      # --> cp source_mirror_compressed conditionally
+      - name: Check for file source_mirror_compressed
+        id: source_mirror_compressed_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-source_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
+      - name: Copy artifacts before build - source_mirror_${{env.YP_VERSION}}_compressed (2)
+        if: steps.source_mirror_compressed_file_check.outputs.file_exists == 'yes'
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*source_mirror_${{env.YP_VERSION}}_compressed.tar.gz"
+          dist: /appdata/artifacts
+      # <-- cp source_mirror_compressed conditionally
+      # --> cp sources conditionally    
+      - name: Check for file source_mirror_compressed
+        id: sources_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sources.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts before build - sources (3)
+        if: steps.sources_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -454,6 +541,7 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-sources.tar.gz"
           dist: /appdata/artifacts
+      # <-- cp sources conditionally    
 #######################################  
       # - name: bitbake uninative-tarball
       #   if: ${{ env.BUILD_UNINATIVE_TARBALL == 'yes' }}
@@ -465,7 +553,7 @@ jobs:
       #     WORKDIR: ${{ env.WORK_DIR }}
       #     WORKSPACE: "jenkins"
 #######################################
-      - name: bitbake ${{ env.BITBAKE_ZERO }} - uninative-tarball?
+      - name: bitbake ${{ env.BITBAKE_ZERO }}
         run: |
           if [ "$BITBAKE_ZERO" == "empty" ]; then
              echo "BITBAKE_ZERO is $BITBAKE_ZERO"
@@ -529,6 +617,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_TWO: ${{ env.BITBAKE_TWO }}
+          BITBAKE_TWO_ALLOW_ERROR: ${{ env.BITBAKE_TWO_ALLOW_ERROR }}
 #######################################
       - name: bitbake ${{ env.BITBAKE_THREE }}
         run: |
@@ -550,6 +639,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_THREE: ${{ env.BITBAKE_THREE }}
+          BITBAKE_THREE_ALLOW_ERROR: ${{ env.BITBAKE_THREE_ALLOW_ERROR }}
 #######################################
       - name: bitbake ${{ env.BITBAKE_FOUR }}
         run: |
@@ -571,24 +661,7 @@ jobs:
           WORKDIR: ${{ env.WORK_DIR }}
           WORKSPACE: "jenkins"
           BITBAKE_FOUR: ${{ env.BITBAKE_FOUR }}
-#######################################
-  #   - name: bitbake core-image-sato-sdk
-  #     run: |
-  #       cd ${{env.WORK_DIR}}
-  #       ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} core-image-sato-sdk
-  #     env: 
-  #       # export WORKDIR to resy-cooker.sh script:
-  #       WORKDIR: ${{ env.WORK_DIR }}
-  #       WORKSPACE: "jenkins"  
-#######################################  
-  #   - name: bitbake 'core-image-sato-sdk -c populate_sdk'
-  #     run: |
-  #       cd ${{env.WORK_DIR}}
-  #       ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} 'core-image-sato-sdk -c populate_sdk'
-  #     env: 
-  #       # export WORKDIR to resy-cooker.sh script:
-  #       WORKDIR: ${{ env.WORK_DIR }}
-  #       WORKSPACE: "jenkins"  
+          BITBAKE_FOUR_ALLOW_ERROR: ${{ env.BITBAKE_FOUR_ALLOW_ERROR }}
 #######################################  
 #######################################
       - name: Compress Artifacts after build
@@ -596,22 +669,37 @@ jobs:
           if [ ! -d ${{env.WORK_DIR}}/artifacts ];then mkdir -p ${{env.WORK_DIR}}/artifacts ; fi
           pushd ${{env.WORK_DIR}}/artifacts
           set +x
+          # 5
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/conf .; fi
-          # ipk  licenses  sdk  spdx
+          # cve  images  ipk  licenses  sdk  spdx
+          # 
+          # 14
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/cve ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-cve.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/cve .; fi
+          # 13
+          if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/images ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-images.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/images .; fi
+          # 6
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-ipk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/ipk .; fi
+          # 7
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-licenses.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/licenses .; fi
+          # 12
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/sdk .; fi
+          # 8
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-spdx.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/tmp/deploy/spdx .; fi
+          # 4
           if [ -d ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz -C ${{env.WORK_DIR}}/build/${{ steps.yp_config.outputs.yp_config }}/buildhistory .; fi
           # check also _master
+          # 9
           if [ -d ${{env.WORK_DIR}}/downloads_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_master .; fi
           if [ -d ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz -C ${{env.WORK_DIR}}/downloads_${{ steps.yp_version.outputs.yp_version }} .; fi
           # check also _master
+          # 11
           if [ -d ${{env.WORK_DIR}}/sstate_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_master .; fi
           if [ -d ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz -C ${{env.WORK_DIR}}/sstate_${{ steps.yp_version.outputs.yp_version }} .; fi
           # check also _master
+          # 10
           if [ -d ${{env.WORK_DIR}}/persistent_master ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_master .; fi
           if [ -d ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} ]; then tar -czf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz -C ${{env.WORK_DIR}}/persistent_${{ steps.yp_version.outputs.yp_version }} .; fi
+          set -x
           pwd
           ls -lah ${{env.WORK_DIR}}/artifacts
           popd
@@ -653,7 +741,19 @@ jobs:
         run: |
           echo "ls ${{env.WORK_DIR}}/artifacts/"
           ls "${{env.WORK_DIR}}/artifacts/"
+      # --> conditionally scp what is there
+      # --> cp buildhistory conditionally
+      - name: Check for file buildhistory
+        id: buildhistory_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-buildhistory.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts after build - buildhistory (4)
+        if: steps.buildhistory_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -662,7 +762,19 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-buildhistory.tar.gz"
           dist: /appdata/artifacts
+      # <-- cp buildhistory conditionally
+      # --> cp conf conditionally
+      - name: Check for file conf
+        id: conf_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-conf.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts after build - conf (5)
+        if: steps.conf_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -671,25 +783,61 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-conf.tar.gz"
           dist: /appdata/artifacts
-      # - name: Copy artifacts after build - deploy-ipk (6)
-      #   uses: youxingz/sshpass-scp-action@v3
-      #   with:
-      #     host: ${{ secrets.SCP_HOST }}
-      #     user: ${{ secrets.SCP_USERNAME }}
-      #     pass: ${{ secrets.SCP_PASSWORD }}
-      #     port: ${{ secrets.SCP_PORT }}
-      #     src: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
-      #     dist: /appdata/artifacts
-      # - name: Copy artifacts after build - deploy-licenses (7)
-      #   uses: youxingz/sshpass-scp-action@v3
-      #   with:
-      #     host: ${{ secrets.SCP_HOST }}
-      #     user: ${{ secrets.SCP_USERNAME }}
-      #     pass: ${{ secrets.SCP_PASSWORD }}
-      #     port: ${{ secrets.SCP_PORT }}
-      #     src: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
-      #     dist: /appdata/artifacts
+      # <-- cp conf conditionally
+      # --> cp deploy-ipk conditionally
+      - name: Check for file deploy-ipk
+        id: deploy-ipk_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-ipk.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
+      - name: Copy artifacts after build - deploy-ipk (6)
+        if: steps.deploy-ipk_file_check.outputs.file_exists == 'yes'
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-ipk.tar.gz"
+          dist: /appdata/artifacts
+      # <-- cp deploy-ipk conditionally
+      # --> cp deploy-licenses conditionally    
+      - name: Check for file deploy-licenses
+        id: deploy-licenses_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-licenses.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
+      - name: Copy artifacts after build - deploy-licenses (7)
+        if: steps.deploy-licenses_file_check.outputs.file_exists == 'yes'
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-licenses.tar.gz"
+          dist: /appdata/artifacts
+      # <-- cp deploy-licenses conditionally
+      # --> cp deploy-spdx conditionally
+      - name: Check for file deploy-spdx
+        id: deploy-spdx_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-spdx.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts after build - deploy-spdx (8)
+        if: steps.deploy-spdx_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -698,7 +846,19 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-deploy-spdx.tar.gz"
           dist: /appdata/artifacts
+      # <-- cp deploy-spdx conditionally
+      # --> cp dl_dir conditionally          
+      - name: Check for file dl_dir
+        id: dl_dir_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-DL_DIR.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts after build - DL_DIR (9)
+        if: steps.dl_dir_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -707,7 +867,19 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-DL_DIR.tar.gz"
           dist: /appdata/artifacts
+      # <-- cp dl_dir conditionally
+      # --> cp persistent_dir conditionally                              
+      - name: Check for file persistent_dir
+        id: persistent_dir_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-PERSISTENT_DIR.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts after build - PERSISTENT_DIR (10)
+        if: steps.persistent_dir_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -716,7 +888,19 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-PERSISTENT_DIR.tar.gz"
           dist: /appdata/artifacts
+      # <-- cp persistent_dir conditionally
+      # --> cp sstate_dir conditionally                              
+      - name: Check for file sstate_dir
+        id: sstate_dir_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
       - name: Copy artifacts after build - SSTATE_DIR (11)
+        if: steps.sstate_dir_file_check.outputs.file_exists == 'yes'
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
@@ -725,15 +909,71 @@ jobs:
           port: ${{ secrets.SCP_PORT }}
           src: "${{env.WORK_DIR}}/artifacts/*-SSTATE_DIR.tar.gz"
           dist: /appdata/artifacts
-      - name: Copy artifacts after build - source_mirror (12)
+      # <-- cp sstate_dir conditionally
+      # --> cp deploy-sdk_dir conditionally                                                                      
+      - name: Check for file deploy-sdk_dir
+        id: deploy-sdk_dir_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-sdk.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
+      - name: Copy artifacts after build - deploy-sdk (12)
+        if: steps.deploy-sdk_dir_file_check.outputs.file_exists == 'yes'      
         uses: youxingz/sshpass-scp-action@v3
         with:
           host: ${{ secrets.SCP_HOST }}
           user: ${{ secrets.SCP_USERNAME }}
           pass: ${{ secrets.SCP_PASSWORD }}
           port: ${{ secrets.SCP_PORT }}
-          src: "${{env.WORK_DIR}}/artifacts/*-source_mirror.tar.gz"
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-sdk.tar.gz"
           dist: /appdata/artifacts
+      # <-- cp deploy-sdk_dir conditionally                                                                                
+      # --> cp deploy-images_dir conditionally                                                                      
+      - name: Check for file deploy-images_dir
+        id: deploy-images_dir_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-images.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
+      - name: Copy artifacts after build - deploy-images (13)
+        if: steps.deploy-images_dir_file_check.outputs.file_exists == 'yes'      
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-images.tar.gz"
+          dist: /appdata/artifacts
+      # <-- cp deploy-sdk_dir conditionally                                                                                
+      # --> cp deploy-cve_dir conditionally                                                                      
+      - name: Check for file deploy-cve_dir
+        id: deploy-cve_dir_file_check
+        run: |
+          if test -f "${{env.WORK_DIR}}/artifacts/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-deploy-cve.tar.gz"; then
+            # file exists
+            echo "file_exists=yes" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=no" >> $GITHUB_OUTPUT
+          fi
+      - name: Copy artifacts after build - deploy-cve (14)
+        if: steps.deploy-cve_dir_file_check.outputs.file_exists == 'yes'      
+        uses: youxingz/sshpass-scp-action@v3
+        with:
+          host: ${{ secrets.SCP_HOST }}
+          user: ${{ secrets.SCP_USERNAME }}
+          pass: ${{ secrets.SCP_PASSWORD }}
+          port: ${{ secrets.SCP_PORT }}
+          src: "${{env.WORK_DIR}}/artifacts/*-deploy-images.tar.gz"
+          dist: /appdata/artifacts
+      # <-- cp deploy-cve_dir conditionally                                                                                
+      # <-- conditionally scp what is there
       - name: Prepare source_mirror_local on server
         if: ${{ env.PREP_SOURCE_MIRROR == 'yes' }}
         uses: https://github.com/appleboy/ssh-action@v0.1.10
@@ -844,7 +1084,32 @@ jobs:
             echo "${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz" > build-version.txt
             ls -lah
             popd
-      - name: Finished 01.uninative-core-image-minimal-prep-runall-fetch.yml
+            # !!!!! create sstate_mirror_compressed !!!!!
+            if [ ! -d /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed ]; then
+               mkdir -p /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed
+            fi
+            cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-SSTATE_DIR.tar.gz ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 1
+            fi
+            cp ${{env.ARTIFACTS_ON_SERVER}}/${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            if [ $? -ne 0 ]; then
+               exit 2
+            fi
+            pushd /appdata/lighttpd/var/www/sstate_mirror_${{ steps.yp_version.outputs.yp_version }}_compressed/
+            # symlink does not seem to work????
+            # ln -sf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz SSTATE_DIR.tar.gz
+            # cp -rf ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz SSTATE_DIR.tar.gz
+            if [ -f SSTATE_DIR.tar.gz ]; then
+               rm -f SSTATE_DIR.tar.gz
+            fi
+            cp ${{ steps.date.outputs.date }}-${{ steps.note.outputs.note }}-${{ steps.yp_config.outputs.yp_config }}-sstate_mirror.tar.gz SSTATE_DIR.tar.gz
+            if [ $? -ne 0 ]; then
+               exit 3
+            fi
+            ls -lah
+            popd
+      - name: 01.uninative-core-image-minimal-prep-runall-fetch.yml
         id: finished_01
         run: |
           echo "Finished 01.uninative-core-image-minimal-prep-runall-fetch.yml"

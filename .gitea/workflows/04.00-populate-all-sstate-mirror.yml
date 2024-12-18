@@ -13,8 +13,6 @@ jobs:
     # The timeout for a job to be finished.
     # Please note that the Gitea instance also has a timeout (3h by default) for the job.
     # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
-    # 100min = 16,6667 hrs
-    # timeout-minutes: 1000
     # Specify location to build, this path persists across builds allowing
     # us to build incrementally
     env:
@@ -58,6 +56,7 @@ jobs:
        THE_UNINATIVE_URL: http://${{env.WEB_SERVER}}/releases/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_UNINATIVE_LOCAL_URL: file:///${{env.WORK_DIR}}/uninative/${{env.UNINATIVE_TARBALL_VERSION}}/
        THE_SOURCE_MIRROR_URL: http://${{env.WEB_SERVER}}/source_mirror_${{env.YP_VERSION}}
+       THE_SSTATE_MIRROR_URL: http://${{env.WEB_SERVER}}/sstate_mirror_${{env.YP_VERSION}}
        USE_PR_SERVER: yes
        PR_SERVER: 192.168.42.182:18586
        USE_HASH_SERVER: yes
@@ -175,7 +174,7 @@ jobs:
            pass: ${{ secrets.SCP_PASSWORD }}
            port: ${{ secrets.SCP_PORT }}
            src: "${{env.WORK_DIR}}/sources/${{env.WORKFLOW_DIR}}/sstates/add-all-sstates.sh"
-           dist: /appdata/artifacts      
+           dist: /appdata/artifacts
       - name: combine all *-SSTATE_DIR.tar.gz on server (/appdata/artifacts)
         uses: https://github.com/appleboy/ssh-action@v0.1.10
         with:
