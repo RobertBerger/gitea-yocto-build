@@ -537,6 +537,7 @@ jobs:
              else
                 # don't allow error:
                 time ./resy-cooker.sh ${{ steps.yp_config.outputs.yp_config }} ${{ steps.bitbake_zero.outputs.bitbake_zero }}
+                echo "retval: $?"
              fi
           fi
         env:
