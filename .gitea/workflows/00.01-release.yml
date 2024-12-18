@@ -39,6 +39,12 @@ jobs:
     secrets: inherit
   # <--
   # -->
+    call-populate-all-source-mirror-1:
+    needs: call-runall-fetch
+    uses: ./.gitea/workflows/05.00-populate-all-source-mirror.yml
+    secrets: inherit
+  # <--
+  # -->
   call-uninative-from-local-source-mirror:
     # make sure uninative tarball builds from sources only and populate the uninative tarball on webserver
     # BB_NO_NETWORK is active
@@ -56,7 +62,7 @@ jobs:
     #   - we create a symlink for it (does not work) - we copy it also to DL_DIR.tar.gz
     #if: ${{ always() }} #This will make your workflow2 executed even if workflow1 fails, remove this, if you want to run this only on success of workflow1
 #    needs: release
-    needs: call-runall-fetch
+    needs: call-populate-all-source-mirror-1
     uses: ./.gitea/workflows/02-uninative-local-source-mirror.yml
     secrets: inherit
   # <--
@@ -164,7 +170,7 @@ jobs:
     needs: call-use-uninative-use-source-mirror-use-sstate-mirror-3
     uses: ./.gitea/workflows/04.00-populate-all-sstate-mirror.yml
     secrets: inherit
-  call-populate-all-source-mirror:
+  call-populate-all-source-mirror-2:
     needs: call-populate-all-sstate-mirror-2
     uses: ./.gitea/workflows/05.00-populate-all-source-mirror.yml
     secrets: inherit
