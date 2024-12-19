@@ -144,16 +144,16 @@ jobs:
 #   # <--
   # -->
   # POPULATE SSTATE mirror from all previous sstates
-  call-populate-all-sstate-mirror-2:
-    needs: release
+#  call-populate-all-sstate-mirror-2:
+#    needs: release
   #  needs: call-use-uninative-use-source-mirror-use-sstate-mirror-2
-    uses: ./.gitea/workflows/04.00-populate-all-sstate-mirror.yml
-    secrets: inherit
+#    uses: ./.gitea/workflows/04.00-populate-all-sstate-mirror.yml
+#    secrets: inherit
   # <--
   # now we should have a 99% SSTATE match
   # let's rebuild!
   # -->
-#  call-use-uninative-use-source-mirror-use-sstate-mirror-3:
+  call-use-uninative-use-source-mirror-use-sstate-mirror-3:
   # @@@TODO: use local source mirror - maybe not ;)
   #   # get/use the uninative tarball from an internal web server
   #   # get all sources from a network accessible source-mirror
@@ -168,10 +168,10 @@ jobs:
   #   # populate (network accessible) sstate-mirror   
   #   # now we should have a 99% SSTATE match
   #   #
-#    needs: release
+  needs: release
 #    needs: call-populate-all-sstate-mirror-2
-#    uses: ./.gitea/workflows/04.03-call-use-uninative-use-source-mirror-use-sstate-mirror-3.yml
-#    secrets: inherit
+    uses: ./.gitea/workflows/04.03-call-use-uninative-use-source-mirror-use-sstate-mirror-3.yml
+    secrets: inherit
   # <--
   # -->
   # POPULATE SSTATE mirror from all previous sstates
