@@ -92,7 +92,7 @@ jobs:
 #   # <--
   # now we should have a 99% SSTATE match
   # -->
-  call-use-uninative-use-source-mirror-use-sstate-mirror-1:
+#  call-use-uninative-use-source-mirror-use-sstate-mirror-1:
   # @@@TODO: use local source mirror - maybe not ;)
   #   # get/use the uninative tarball from an internal web server
   #   # get all sources from a network accessible source-mirror
@@ -107,34 +107,44 @@ jobs:
   #   # populate (network accessible) sstate-mirror   
   #   # now we should have a 99% SSTATE match
   #   #
-    needs: release
-#    needs: call-use-uninative-core-image-sato-sdk-local-source-mirror
-    uses: ./.gitea/workflows/04.01-call-use-uninative-use-source-mirror-use-sstate-mirror-1.yml
-    secrets: inherit
-  # # <--
-#   # -->
-#   call-use-uninative-use-source-mirror-use-sstate-mirror-2:
-#   # @@@TODO: use local source mirror - maybe not ;)
-#   #   # get/use the uninative tarball from an internal web server
-#   #   # get all sources from a network accessible source-mirror
-#   #   #   - I would think that local source-mirror would be faster
-#   #   #   - use premirrors
-#   #   # (networked accessible) PR_SERVER is active
-#   #   # (networked accessible) HASH_SERVER is active
-#   #   #
-#   #   # core-image-sato-sdk -c populate_sdk
-#   #   # 
-#   #   # populate (network accessible) sstate-mirror   
-#   #   # now we should have a 99% SSTATE match
-#   #   #
-# #    needs: release
-#     needs: call-use-uninative-use-source-mirror-use-sstate-mirror-1
-#     uses: ./.gitea/workflows/04.02-call-use-uninative-use-source-mirror-use-sstate-mirror-2.yml
+#     needs: release
+# #    needs: call-use-uninative-core-image-sato-sdk-local-source-mirror
+#     uses: ./.gitea/workflows/04.01-call-use-uninative-use-source-mirror-use-sstate-mirror-1.yml
 #     secrets: inherit
-#   # <--
+  # # <--
+  # -->
+  # -->
+  # POPULATE SSTATE mirror from all previous sstates
+  call-populate-all-sstate-mirror-1:
+    needs: release
+  #  needs: call-use-uninative-use-source-mirror-use-sstate-mirror-2
+    uses: ./.gitea/workflows/04.00-populate-all-sstate-mirror.yml
+    secrets: inherit
+  # <--
+
+  call-use-uninative-use-source-mirror-use-sstate-mirror-2:
+  # @@@TODO: use local source mirror - maybe not ;)
+  #   # get/use the uninative tarball from an internal web server
+  #   # get all sources from a network accessible source-mirror
+  #   #   - I would think that local source-mirror would be faster
+  #   #   - use premirrors
+  #   # (networked accessible) PR_SERVER is active
+  #   # (networked accessible) HASH_SERVER is active
+  #   #
+  #   # core-image-sato-sdk -c populate_sdk
+  #   # 
+  #   # populate (network accessible) sstate-mirror   
+  #   # now we should have a 99% SSTATE match
+  #   #
+#    needs: release
+#    needs: call-use-uninative-use-source-mirror-use-sstate-mirror-1
+    needs: call-populate-all-sstate-mirror-1
+    uses: ./.gitea/workflows/04.02-call-use-uninative-use-source-mirror-use-sstate-mirror-2.yml
+    secrets: inherit
+  # <--
 #   # -->
 #   # POPULATE SSTATE mirror from all previous sstates
-#   call-populate-all-sstate-mirror-1:
+#   call-populate-all-sstate-mirror-2:
 #   #  needs: release
 #     needs: call-use-uninative-use-source-mirror-use-sstate-mirror-2
 #     uses: ./.gitea/workflows/04.00-populate-all-sstate-mirror.yml
@@ -159,7 +169,7 @@ jobs:
 #   #   # now we should have a 99% SSTATE match
 #   #   #
 # #    needs: release
-#     needs: call-populate-all-sstate-mirror-1
+#     needs: call-populate-all-sstate-mirror-2
 #     uses: ./.gitea/workflows/04.03-call-use-uninative-use-source-mirror-use-sstate-mirror-3.yml
 #     secrets: inherit
 #   # <--
