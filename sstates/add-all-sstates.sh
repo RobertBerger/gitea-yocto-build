@@ -46,12 +46,12 @@ do
    # <-- sanitize
    echo "+ rsync -ap * ../${TARGET_TEMP_DIR}/"
    rsync -ap * ../${TARGET_TEMP_DIR}/
-   echo " --> symlinks in ${SOURCE_TEMP_DIR}"
-   find . -type l -ls
-   echo " <-- symlinks in ${SOURCE_TEMP_DIR}"
-   echo " --> dirs in ${SOURCE_TEMP_DIR}"
-   find . -type d -ls
-   echo " <-- dirs in ${SOURCE_TEMP_DIR}"
+   #echo " --> symlinks in ${SOURCE_TEMP_DIR}"
+   #find . -type l -ls
+   #echo " <-- symlinks in ${SOURCE_TEMP_DIR}"
+   #echo " --> dirs in ${SOURCE_TEMP_DIR}"
+   #find . -type d -ls
+   #echo " <-- dirs in ${SOURCE_TEMP_DIR}"
    echo "+ popd"
    popd
    echo "+ rm -rf ${SOURCE_TEMP_DIR}"
@@ -59,12 +59,12 @@ do
    echo "+ mkdir ${SOURCE_TEMP_DIR}"
    mkdir ${SOURCE_TEMP_DIR}
    du -hs ${TARGET_TEMP_DIR}
-   echo " --> symlinks in ../${TARGET_TEMP_DIR}/"
-   find ${TARGET_TEMP_DIR}/ -type l -ls
-   echo " <-- symlinks in ../${TARGET_TEMP_DIR}/"
-   echo " --> dirs in ../${TARGET_TEMP_DIR}/"
-   find ${TARGET_TEMP_DIR}/ -type d -ls
-   echo " <-- dirs in ../${TARGET_TEMP_DIR}/"
+   #echo " --> symlinks in ../${TARGET_TEMP_DIR}/"
+   #find ${TARGET_TEMP_DIR}/ -type l -ls
+   #echo " <-- symlinks in ../${TARGET_TEMP_DIR}/"
+   #echo " --> dirs in ../${TARGET_TEMP_DIR}/"
+   #find ${TARGET_TEMP_DIR}/ -type d -ls
+   #echo " <-- dirs in ../${TARGET_TEMP_DIR}/"
 done
 
 echo "+ pushd ${TARGET_TEMP_DIR}"
