@@ -184,14 +184,14 @@ jobs:
 #    needs: call-populate-all-sstate-mirror-2
 #    uses: ./.gitea/workflows/05.00-populate-all-source-mirror.yml
 #    secrets: inherit
-#  call-use-uninative-use-source-mirror-use-sstate-mirror-4:
-#   needs: release
+  call-use-uninative-use-source-mirror-use-sstate-mirror-4:
+   needs: release
    #needs: call-populate-all-source-mirror-2
-#   uses: ./.gitea/workflows/04.04-call-use-uninative-use-source-mirror-use-sstate-mirror-4.yml
-#   secrets: inherit
+   uses: ./.gitea/workflows/04.04-call-use-uninative-use-source-mirror-use-sstate-mirror-4.yml
+   secrets: inherit
   call-populate-all-sstate-mirror-4:
-    needs: release
-#    needs: call-use-uninative-use-source-mirror-use-sstate-mirror-4
+#    needs: release
+    needs: call-use-uninative-use-source-mirror-use-sstate-mirror-4
     uses: ./.gitea/workflows/04.00-populate-all-sstate-mirror.yml
     secrets: inherit
   call-populate-all-source-mirror-4:
